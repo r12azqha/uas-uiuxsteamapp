@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Steam Store Replica</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Motiva+Sans:wght@300;400;500;700&display=swap");
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #1b2838;
+        color: #c6d4df;
+      }
+
+      /* --- FIGMA MODE --- */
+      body.figma-mode {
+        overflow-y: auto !important;
+      }
+
+      body.figma-mode .app-view {
+        display: block !important;
+        margin-bottom: 100px;
+        border: 2px dashed #66c0f4;
+        position: relative;
+      }
+      body.figma-mode .app-view::before {
+        content: attr(id);
+        position: absolute;
+        top: -30px;
+        left: 0;
+        background: #66c0f4;
+        color: black;
+        padding: 4px 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      /* SPECIAL LOGIC FOR MODAL IN FIGMA MODE */
+      body.figma-mode #added-to-cart-modal {
+        display: flex !important;
+        position: relative !important;
+        inset: auto !important;
+        background-color: transparent !important;
+        height: auto !important;
+        padding: 50px 0;
+        border: 2px dashed #d2efa9;
+        margin-bottom: 50px;
+        z-index: 1;
+      }
+      body.figma-mode #added-to-cart-modal::before {
+        content: "POPUP MODAL COMPONENT";
+        position: absolute;
+        top: -30px;
+        left: 0;
+        background: #d2efa9;
+        color: black;
+        padding: 4px 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 12px;
+        background: #171a21;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #417a9b;
+        border-radius: 6px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #66c0f4;
+      }
+
+      /* Gradients & Buttons */
+      .btn-green {
+        background: linear-gradient(to bottom, #78b928 5%, #639823 95%);
+        color: #d2efa9;
+        text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.3);
+        transition: all 0.2s;
+      }
+      .btn-green:hover {
+        background: linear-gradient(to bottom, #8ed633 5%, #76b129 95%);
+        color: white;
+        transform: scale(1.02);
+      }
+
+      .btn-blue {
+        background: linear-gradient(
+          to bottom,
+          rgba(47, 137, 188, 1) 5%,
+          rgba(23, 67, 92, 1) 95%
+        );
+      }
+      .btn-blue:hover {
+        background: linear-gradient(
+          to bottom,
+          rgba(102, 192, 244, 1) 5%,
+          rgba(47, 137, 188, 1) 95%
+        );
+      }
+
+      /* Steam Popup Button Styles */
+      .btn-steam-gray {
+        background: #3d4450;
+        color: #fff;
+        box-shadow: 0 0 5px #000;
+      }
+      .btn-steam-gray:hover {
+        background: #414b59;
+      }
+
+      .btn-steam-blue {
+        background: linear-gradient(to right, #47bfff 0%, #1a44c2 100%);
+        color: #fff;
+        box-shadow: 0 0 5px #000;
+      }
+      .btn-steam-blue:hover {
+        background: linear-gradient(to right, #66c0f4 0%, #2558f5 100%);
+      }
+
+      .search-bg {
+        background-color: #316282;
+        box-shadow: inset 0 0 4px #000000;
+      }
+      .input-dark {
+        background: #2a3f5a;
+        border: 1px solid #000;
+        color: white;
+        padding: 8px;
+        border-radius: 2px;
+        width: 100%;
+        outline: none;
+      }
+      .input-dark:focus {
+        border-color: #66c0f4;
+      }
+
+      /* Animations */
+      .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .slide-down {
+        animation: slideDown 0.3s ease-out forwards;
+      }
+      @keyframes slideDown {
+        from {
+          transform: translateY(-10px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .shake {
+        animation: shake 0.5s;
+      }
+      @keyframes shake {
+        0% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-5px);
+        }
+        50% {
+          transform: translateX(5px);
+        }
+        75% {
+          transform: translateX(-5px);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      /* --- LIQUID GLASSMORPHISM --- */
+      .liquid-container {
+        position: relative;
+        overflow: hidden;
+        background: #0f1217;
+      }
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(50px);
+        opacity: 0.7;
+        animation: drift 8s infinite alternate ease-in-out;
+        z-index: 1;
+      }
+      .blob-1 {
+        top: -20%;
+        left: -20%;
+        width: 500px;
+        height: 500px;
+        background: #1a9fff;
+        animation-delay: 0s;
+      }
+      .blob-2 {
+        bottom: -20%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: #66c0f4;
+        animation-delay: -2s;
+      }
+      .blob-3 {
+        top: 30%;
+        left: 40%;
+        width: 300px;
+        height: 300px;
+        background: #c238c4;
+        animation-delay: -4s;
+      }
+      .glass-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(20px);
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      @keyframes drift {
+        0% {
+          transform: translate(0, 0) scale(1) rotate(0deg);
+        }
+        50% {
+          transform: translate(20px, 30px) scale(1.1) rotate(10deg);
+        }
+        100% {
+          transform: translate(-20px, 10px) scale(0.9) rotate(-5deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="flex flex-col min-h-screen">
+    <!-- ADDED TO CART MODAL -->
+    <div
+      id="added-to-cart-modal"
+      class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm fade-in"
+    >
+      <div
+        class="bg-[#1b2838] w-full max-w-2xl shadow-2xl border border-[#000] relative mx-4"
+      >
+        <!-- Header -->
+        <div class="p-4 flex justify-between items-center bg-[#1b2838]">
+          <h2 class="text-xl md:text-2xl font-bold text-white tracking-wide">
+            Added to your cart!
+          </h2>
+          <button
+            onclick="closeModal()"
+            class="text-[#66c0f4] hover:text-white text-xl"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="bg-[#2a3f5a] p-1">
+          <div
+            class="bg-[#1b2838] p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6"
+          >
+            <img
+              id="modal-game-img"
+              src=""
+              class="w-full md:w-48 h-32 md:h-28 object-cover shadow-lg border border-black/50"
+            />
+            <div class="flex-grow flex flex-col justify-between gap-4 md:gap-0">
+              <div>
+                <h3
+                  id="modal-game-title"
+                  class="text-white text-lg font-medium mb-1"
+                >
+                  Game Title
+                </h3>
+                <div class="text-[#8f98a0] text-sm flex gap-2">
+                  <i class="fab fa-windows"></i> <i class="fab fa-steam"></i>
+                </div>
+              </div>
+              <div class="flex justify-between items-end">
+                <!-- Dropdown Mockup -->
+                <div class="relative">
+                  <select
+                    class="bg-[#3d4450] text-white text-sm px-3 py-1.5 rounded border border-black shadow-inner outline-none cursor-pointer hover:bg-[#414b59]"
+                  >
+                    <option>For my account</option>
+                    <option>For my account: private</option>
+                    <option>This is a gift</option>
+                  </select>
+                </div>
+                <div class="text-right">
+                  <div
+                    id="modal-game-price"
+                    class="text-white font-medium mb-1"
+                  >
+                    $0.00
+                  </div>
+                  <div
+                    class="text-[11px] text-[#56707f] hover:text-white cursor-pointer underline"
+                  >
+                    Add | Remove
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div
+          class="p-4 md:p-6 flex flex-col md:flex-row gap-4 justify-between bg-[#1b2838]"
+        >
+          <button
+            onclick="closeModal()"
+            class="btn-steam-gray px-6 py-3 rounded-sm text-sm font-medium hover:text-white transition w-full md:w-1/2"
+          >
+            Continue Shopping
+          </button>
+          <button
+            onclick="router('cart'); closeModal()"
+            class="btn-steam-blue px-6 py-3 rounded-sm text-sm font-medium hover:text-white transition w-full md:w-1/2 shadow-blue-glow"
+          >
+            View My Cart (<span id="modal-cart-count">1</span>)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Header -->
+    <header class="bg-[#171a21] py-4 md:py-8 px-4 relative z-50 shadow-md">
+      <div
+        class="max-w-[940px] mx-auto flex flex-wrap justify-between items-center"
+      >
+        <div class="flex items-center gap-6">
+          <!-- Hamburger Menu Button (Mobile) -->
+          <button
+            onclick="toggleMobileMenu()"
+            class="md:hidden text-[#c5c3c0] hover:text-white text-2xl"
+          >
+            <i class="fas fa-bars"></i>
+          </button>
+
+          <!-- Logo -->
+          <a
+            href="#"
+            onclick="router('store')"
+            class="flex items-center gap-2 group"
+          >
+            <i
+              class="fa-brands fa-steam text-4xl text-[#c5c3c0] group-hover:text-white transition"
+            ></i>
+            <span
+              class="text-2xl font-bold tracking-wider text-[#c5c3c0] group-hover:text-white uppercase hidden sm:block"
+              >STEAM</span
+            >
+          </a>
+
+          <!-- Desktop Nav -->
+          <nav
+            class="hidden md:flex gap-6 text-sm font-semibold text-[#b8b6b4] mt-1"
+          >
+            <a
+              href="#"
+              onclick="router('store')"
+              class="nav-link uppercase border-b-2 border-transparent hover:border-[#1a9fff] pb-1 hover:text-white"
+              >Store</a
+            >
+            <a
+              href="#"
+              onclick="router('library')"
+              class="nav-link uppercase border-b-2 border-transparent hover:border-[#1a9fff] pb-1 hover:text-white"
+              >Library</a
+            >
+            <a
+              href="#"
+              class="nav-link uppercase border-b-2 border-transparent hover:border-[#1a9fff] pb-1 hover:text-white"
+              >Community</a
+            >
+            <a
+              href="#"
+              class="nav-link uppercase border-b-2 border-transparent hover:border-[#1a9fff] pb-1 hover:text-white"
+              >Support</a
+            >
+          </nav>
+        </div>
+
+        <div class="flex items-center gap-4 text-xs text-[#b8b6b4]">
+          <div id="user-status" class="flex items-center gap-2">
+            <a href="#" onclick="router('login')" class="hover:text-white"
+              >login</a
+            >
+            <span>|</span>
+            <a href="#" class="hover:text-white">language</a>
+          </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div
+          id="mobile-menu"
+          class="hidden w-full md:hidden mt-4 bg-[#1b2838] p-4 border-t border-[#3a455a] slide-down"
+        >
+          <div class="flex flex-col gap-4 text-sm font-semibold text-[#b8b6b4]">
+            <a
+              href="#"
+              onclick="router('store'); toggleMobileMenu()"
+              class="uppercase hover:text-white"
+              >Store</a
+            >
+            <a
+              href="#"
+              onclick="router('library'); toggleMobileMenu()"
+              class="uppercase hover:text-white"
+              >Library</a
+            >
+            <a href="#" class="uppercase hover:text-white">Community</a>
+            <a href="#" class="uppercase hover:text-white">Support</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <main class="flex-grow w-full">
+      <!-- VIEW 1: STORE HOME -->
+      <div id="view-store" class="app-view fade-in">
+        <!-- Store Nav Bar -->
+        <div
+          class="bg-gradient-to-r from-[#214361] to-[#214361] border-b border-black/20 shadow-lg sticky top-0 z-40 mb-6"
+        >
+          <div
+            class="max-w-[940px] mx-auto px-4 py-1 flex items-center justify-between"
+          >
+            <div
+              class="flex items-center gap-1 text-sm font-medium whitespace-nowrap overflow-x-auto no-scrollbar w-full md:w-auto"
+            >
+              <a
+                href="#"
+                class="px-3 py-2 text-white bg-black/20 rounded shadow-inner"
+                >Your Store</a
+              >
+              <a
+                href="#"
+                class="px-3 py-2 text-[#e5e5e5] hover:text-white transition"
+                >New & Noteworthy</a
+              >
+              <a
+                href="#"
+                class="px-3 py-2 text-[#e5e5e5] hover:text-white transition"
+                >Categories</a
+              >
+            </div>
+            <div class="hidden md:flex ml-4 relative">
+              <input
+                type="text"
+                placeholder="search"
+                class="search-bg text-white pl-3 pr-8 py-1 rounded-sm outline-none w-48 text-sm border border-transparent focus:border-[#66c0f4]"
+              />
+              <i
+                class="fas fa-search absolute right-2 top-1.5 text-[#66c0f4]"
+              ></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-[940px] mx-auto px-4 pb-12">
+          <h2 class="text-white text-sm font-bold uppercase tracking-wide mb-2">
+            Featured & Recommended
+          </h2>
+
+          <!-- Hero Game (Lorem Odyssey) -->
+          <div
+            onclick="router('game', 'lorem')"
+            class="bg-[#0f1217] shadow-xl mb-8 hover:shadow-2xl transition group cursor-pointer flex flex-col md:flex-row h-auto md:h-[350px]"
+          >
+            <div
+              class="md:w-2/3 relative overflow-hidden liquid-container min-h-[200px] md:min-h-[300px]"
+            >
+              <div class="blob blob-1"></div>
+              <div class="blob blob-2"></div>
+              <div class="blob blob-3"></div>
+              <div class="glass-overlay">
+                <div class="text-center">
+                  <h1
+                    class="text-2xl md:text-5xl font-bold text-white tracking-widest drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] opacity-90 mb-2"
+                  >
+                    LOREM ODYSSEY
+                  </h1>
+                  <span
+                    class="text-white/70 text-xs md:text-sm tracking-[0.3em] uppercase border-b border-white/30 pb-1"
+                    >Ipsum Edition</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div
+              class="md:w-1/3 p-4 flex flex-col justify-between bg-[url('https://placehold.co/400x600/101319/222.png')] bg-cover relative z-10"
+            >
+              <div>
+                <h3 class="text-2xl text-white font-medium mb-1">
+                  Lorem Odyssey
+                </h3>
+                <div class="grid grid-cols-2 gap-2 mt-4">
+                  <img
+                    src="https://placehold.co/150x80/2a475e/fff?text=Gameplay+1"
+                    class="rounded opacity-70 hover:opacity-100"
+                  />
+                  <img
+                    src="https://placehold.co/150x80/2a475e/fff?text=Gameplay+2"
+                    class="rounded opacity-70 hover:opacity-100"
+                  />
+                </div>
+              </div>
+              <div>
+                <div class="text-xs text-white mb-1">Available Now</div>
+                <div class="flex items-center justify-start gap-2 mt-1">
+                  <div
+                    class="bg-[#4c6b22] text-[#beee11] px-2 py-0.5 text-lg font-bold rounded-sm"
+                  >
+                    -20%
+                  </div>
+                  <div class="flex flex-col items-end leading-none">
+                    <span class="text-[11px] text-[#738895] line-through"
+                      >$59.99</span
+                    >
+                    <span class="text-[15px] text-[#beee11] font-medium"
+                      >$47.99</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grid Games -->
+          <h2
+            class="text-white text-sm font-bold uppercase tracking-wide mb-3 mt-8"
+          >
+            Special Offers
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Game 2: Dolor Racing -->
+            <div
+              onclick="router('game', 'dolor')"
+              class="bg-[#16202d] hover:bg-[#2a475e] p-3 cursor-pointer group shadow-lg"
+            >
+              <img
+                src="https://placehold.co/600x350/2a475e/ffffff?text=Dolor+Sit+Amet"
+                class="w-full h-32 object-cover mb-2"
+              />
+              <div class="flex justify-between items-end">
+                <div class="overflow-hidden">
+                  <div
+                    class="text-[#c7d5e0] font-medium text-sm group-hover:text-white truncate"
+                  >
+                    Dolor Sit Amet Racing
+                  </div>
+                  <div class="text-[11px] text-gray-500 truncate">
+                    High-octane latin racing simulation.
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <div
+                  class="bg-[#4c6b22] text-[#beee11] px-1.5 py-0.5 text-xs font-bold rounded-sm"
+                >
+                  -75%
+                </div>
+                <div class="flex gap-2 items-center">
+                  <span class="text-[10px] text-[#738895] line-through"
+                    >$39.99</span
+                  >
+                  <span class="text-sm text-[#beee11] font-medium">$9.99</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Game 3: Ipsum Simulator -->
+            <div
+              onclick="router('game', 'ipsum')"
+              class="bg-[#16202d] hover:bg-[#2a475e] p-3 cursor-pointer group shadow-lg"
+            >
+              <img
+                src="https://placehold.co/600x350/3b2c45/ffffff?text=Ipsum+Simulator"
+                class="w-full h-32 object-cover mb-2"
+              />
+              <div class="flex justify-between items-end">
+                <div class="overflow-hidden">
+                  <div
+                    class="text-[#c7d5e0] font-medium text-sm group-hover:text-white truncate"
+                  >
+                    Ipsum Simulator 2025
+                  </div>
+                  <div class="text-[11px] text-gray-500 truncate">
+                    Build your own text blocks.
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <div
+                  class="bg-[#4c6b22] text-[#beee11] px-1.5 py-0.5 text-xs font-bold rounded-sm"
+                >
+                  -25%
+                </div>
+                <div class="flex gap-2 items-center">
+                  <span class="text-[10px] text-[#738895] line-through"
+                    >$19.99</span
+                  >
+                  <span class="text-sm text-[#beee11] font-medium">$14.99</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Game 4: Magna Aliqua RPG -->
+            <div
+              onclick="router('game', 'magna')"
+              class="bg-[#16202d] hover:bg-[#2a475e] p-3 cursor-pointer group shadow-lg"
+            >
+              <img
+                src="https://placehold.co/600x350/5e2a2a/ffffff?text=Magna+Aliqua"
+                class="w-full h-32 object-cover mb-2"
+              />
+              <div class="flex justify-between items-end">
+                <div class="overflow-hidden">
+                  <div
+                    class="text-[#c7d5e0] font-medium text-sm group-hover:text-white truncate"
+                  >
+                    Magna Aliqua RPG
+                  </div>
+                  <div class="text-[11px] text-gray-500 truncate">
+                    Excepteur sint occaecat cupidatat non.
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <div
+                  class="bg-[#4c6b22] text-[#beee11] px-1.5 py-0.5 text-xs font-bold rounded-sm"
+                >
+                  -15%
+                </div>
+                <div class="flex gap-2 items-center">
+                  <span class="text-[10px] text-[#738895] line-through"
+                    >$34.99</span
+                  >
+                  <span class="text-sm text-[#beee11] font-medium">$29.99</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: GAME DETAIL (Dynamic) -->
+      <div
+        id="view-game"
+        class="app-view hidden fade-in max-w-[940px] mx-auto px-4 py-6"
+      >
+        <div class="text-xs text-[#8f98a0] mb-4">
+          <a href="#" onclick="router('store')" class="hover:text-white"
+            >All Games</a
+          >
+          > <span>Action</span> > <span id="detail-breadcrumb">Game Title</span>
+        </div>
+
+        <h1 id="detail-title" class="text-3xl text-white font-medium mb-4">
+          Game Title
+        </h1>
+
+        <div class="flex flex-col md:flex-row gap-4 mb-8">
+          <div
+            class="md:w-2/3 bg-black aspect-video relative flex items-center justify-center border border-black overflow-hidden"
+          >
+            <img
+              id="detail-image"
+              src=""
+              class="w-full h-full object-cover opacity-60"
+            />
+            <i
+              class="fas fa-play-circle text-6xl text-white/50 hover:text-white/80 cursor-pointer transition absolute z-10"
+            ></i>
+          </div>
+          <div class="md:w-1/3 text-sm">
+            <img id="detail-header" src="" class="w-full mb-3 shadow-md" />
+            <p id="detail-desc" class="text-[#c6d4df] text-xs mb-4">
+              Description goes here.
+            </p>
+            <div class="text-[11px] text-[#556772]">
+              <div class="flex mb-1">
+                <span class="w-24 uppercase">Reviews:</span>
+                <span class="text-[#66c0f4]">Very Positive</span>
+              </div>
+              <div class="flex mb-1">
+                <span class="w-24 uppercase">Release Date:</span>
+                <span class="text-[#8f98a0]">Nov 19, 2025</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-gradient-to-r from-black/40 to-black/20 p-4 rounded relative border border-black/50 mb-8"
+        >
+          <h2 class="text-xl text-white mb-1">
+            Buy <span id="detail-buy-title">Game</span>
+          </h2>
+          <div
+            class="absolute right-4 bottom-4 flex items-center bg-black/40 p-1 rounded"
+          >
+            <div class="text-white text-xs px-2 font-bold" id="detail-price">
+              $0.00
+            </div>
+            <button
+              id="btn-add-cart"
+              class="btn-green px-4 py-2 rounded-sm text-sm font-medium"
+            >
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 3: CART (Dynamic) -->
+      <div
+        id="view-cart"
+        class="app-view hidden fade-in max-w-[940px] mx-auto px-4 py-8"
+      >
+        <h2 class="text-2xl text-white font-light tracking-wide mb-6 uppercase">
+          Your Shopping Cart
+        </h2>
+
+        <div class="flex flex-col md:flex-row gap-6">
+          <div class="w-full md:w-2/3">
+            <!-- Cart Items Container -->
+            <div id="cart-items-container" class="flex flex-col gap-2">
+              <!-- Items injected here via JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div
+              id="cart-empty"
+              class="hidden p-8 text-center text-[#8f98a0] bg-[#16202d]"
+            >
+              Your cart is empty.
+            </div>
+
+            <!-- Totals -->
+            <div
+              class="bg-[#212c3d] p-3 text-xs flex justify-between rounded-b mb-4 mt-1"
+            >
+              <span class="text-[#acb2b8]">Estimated total</span>
+              <span id="cart-total" class="text-white font-bold">$0.00</span>
+            </div>
+
+            <div class="text-right">
+              <button
+                onclick="router('store')"
+                class="text-xs text-[#66c0f4] hover:text-white underline"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+
+          <div class="w-full md:w-1/3 bg-[#171a21] p-4 rounded h-fit">
+            <button
+              onclick="checkAuthAndProceed()"
+              class="btn-green w-full py-3 rounded-sm font-medium text-[15px] mb-3"
+            >
+              Purchase for myself
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 4: LOGIN -->
+      <div
+        id="view-login"
+        class="app-view hidden fade-in max-w-[600px] mx-auto px-4 py-12"
+      >
+        <div class="bg-[#16202d] p-8 border border-[#2a3f5a] shadow-2xl">
+          <h2
+            class="text-3xl text-white font-light tracking-wide mb-6 uppercase text-center"
+          >
+            Sign In
+          </h2>
+          <div class="space-y-4 mb-6">
+            <div>
+              <label class="text-[#66c0f4] text-xs font-bold uppercase"
+                >Account Name</label
+              ><input type="text" class="input-dark" value="GamerOne" />
+            </div>
+            <div>
+              <label class="text-[#66c0f4] text-xs font-bold uppercase"
+                >Password</label
+              ><input type="password" class="input-dark" value="password123" />
+            </div>
+          </div>
+          <button
+            onclick="doLogin()"
+            class="btn-blue w-full py-3 rounded text-white font-medium text-lg mb-4"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 5: CHECKOUT -->
+      <div
+        id="view-checkout"
+        class="app-view hidden fade-in max-w-[700px] mx-auto px-4 py-8"
+      >
+        <h2 class="text-2xl text-white font-light tracking-wide mb-6 uppercase">
+          Payment Method
+        </h2>
+
+        <div
+          id="payment-error"
+          class="hidden bg-[#3c0f12] border border-[#a61d24] p-4 mb-4 text-[#d85e65] text-sm flex items-center gap-3"
+        >
+          <i class="fas fa-exclamation-triangle text-2xl"></i>
+          <div>
+            <strong class="block text-white"
+              >Your purchase has not been completed.</strong
+            >The payment processor reported a failure. Please try again.
+          </div>
+        </div>
+
+        <div id="payment-form" class="bg-[#16202d] p-6 border border-[#2a3f5a]">
+          <div class="mb-6">
+            <label class="block text-[#66c0f4] text-xs uppercase font-bold mb-1"
+              >Payment Method</label
+            >
+            <select
+              class="w-full md:w-1/2 bg-[#2a3f5a] text-white p-2 text-sm border border-black rounded-sm outline-none"
+            >
+              <option>Visa</option>
+              <option>MasterCard</option>
+            </select>
+          </div>
+          <div class="bg-[#00000033] p-4 mb-6 text-sm text-[#acb2b8]">
+            <div
+              class="flex justify-between border-t border-[#3a455a] pt-1 mt-1 font-bold text-white"
+            >
+              <span>Total to Pay</span>
+              <span id="checkout-total">$0.00</span>
+            </div>
+          </div>
+          <button
+            onclick="processPayment()"
+            class="btn-green w-full md:w-auto px-12 py-3 rounded-sm font-medium text-lg"
+          >
+            Purchase
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 6: SUCCESS -->
+      <div
+        id="view-success"
+        class="app-view hidden fade-in max-w-[700px] mx-auto px-4 py-12 text-center"
+      >
+        <div class="bg-[#16202d] p-8 border border-[#2a3f5a] shadow-xl">
+          <i class="fas fa-check-circle text-6xl text-[#66c0f4] mb-4"></i>
+          <h2 class="text-3xl text-white font-light mb-2">
+            Thank you for your purchase!
+          </h2>
+          <div class="flex flex-col gap-3 justify-center max-w-sm mx-auto mt-8">
+            <button
+              onclick="goToLibraryAndInstall()"
+              class="bg-[#212c3d] hover:bg-[#66c0f4] hover:text-white text-[#66c0f4] py-4 rounded text-lg font-bold border border-[#2a3f5a] transition flex items-center justify-center gap-3"
+            >
+              <i class="fas fa-download"></i> Install Content Now
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 7: LIBRARY -->
+      <div
+        id="view-library"
+        class="app-view hidden fade-in w-full h-[calc(100vh-80px)] overflow-hidden"
+      >
+        <div class="flex flex-col md:flex-row h-full">
+          <div
+            class="w-full md:w-64 bg-[#191d26] flex flex-col border-r border-black/50"
+          >
+            <div
+              class="p-3 bg-[#202530] text-sm font-medium text-white shadow-sm"
+            >
+              HOME
+            </div>
+            <div
+              id="library-list"
+              class="p-2 overflow-y-auto flex-grow space-y-1 h-32 md:h-auto"
+            >
+              <!-- Populated dynamically + defaults -->
+              <div
+                class="px-2 py-1 text-[#dcdedf] hover:bg-[#3d4450] text-sm cursor-pointer"
+              >
+                Counter-Strike 2
+              </div>
+              <div
+                class="px-2 py-1 text-[#dcdedf] hover:bg-[#3d4450] text-sm cursor-pointer"
+              >
+                Dota 2
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex-grow bg-[url('https://placehold.co/1200x800/101319/222.png')] bg-cover relative p-8"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-[#1b2838] via-[#1b2838]/90 to-transparent"
+            ></div>
+            <div class="relative z-10 mt-10 md:mt-32">
+              <h1
+                id="lib-game-title"
+                class="text-3xl md:text-4xl font-bold text-white mb-6 drop-shadow-md"
+              >
+                Select a Game
+              </h1>
+              <div
+                id="lib-action-area"
+                class="bg-[#20242c] p-4 rounded inline-block w-full md:w-[600px] shadow-2xl border border-[#3a455a]"
+              >
+                <div id="download-ui">
+                  <div
+                    class="flex justify-between text-[#66c0f4] text-xs uppercase font-bold mb-1"
+                  >
+                    <span id="download-status-text">Downloading...</span
+                    ><span id="download-percent">0%</span>
+                  </div>
+                  <div
+                    class="w-full bg-[#1a1f29] h-4 mb-2 overflow-hidden border border-black"
+                  >
+                    <div
+                      id="progress-bar"
+                      class="h-full bg-gradient-to-r from-[#1a9fff] to-[#66c0f4] w-0 transition-all duration-300"
+                    ></div>
+                  </div>
+                </div>
+                <div id="play-ui" class="hidden">
+                  <button
+                    class="btn-green px-12 py-3 rounded text-xl font-bold uppercase tracking-wider shadow-lg w-full"
+                  >
+                    <i class="fas fa-play mr-2"></i> Play
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- JS Logic -->
+    <script>
+      // --- DATA ---
+      const gamesDB = {
+        lorem: {
+          id: "lorem",
+          title: "Lorem Odyssey",
+          price: 47.99,
+          image:
+            "https://placehold.co/600x350/2a475e/ffffff?text=Lorem+Odyssey",
+          desc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.",
+        },
+        dolor: {
+          id: "dolor",
+          title: "Dolor Sit Amet Racing",
+          price: 9.99,
+          image:
+            "https://placehold.co/600x350/2a475e/ffffff?text=Dolor+Sit+Amet",
+          desc: "Experience high-octane latin racing simulation. Speed through the text blocks of history in this adrenaline-pumping classic.",
+        },
+        ipsum: {
+          id: "ipsum",
+          title: "Ipsum Simulator 2025",
+          price: 14.99,
+          image:
+            "https://placehold.co/600x350/3b2c45/ffffff?text=Ipsum+Simulator",
+          desc: "Build your own text blocks. Manage resources like commas, periods, and line breaks in this intense strategy sim.",
+        },
+        magna: {
+          id: "magna",
+          title: "Magna Aliqua RPG",
+          price: 29.99,
+          image: "https://placehold.co/600x350/5e2a2a/ffffff?text=Magna+Aliqua",
+          desc: "Excepteur sint occaecat cupidatat non proident. Level up your vocabulary in this classic role-playing adventure.",
+        },
+      };
+
+      // --- STATE ---
+      let cart = []; // Array of game objects
+      let isLoggedIn = false;
+      let currentGameId = null; // For detail view
+
+      // --- ROUTER ---
+      function router(viewName, param = null) {
+        // Hide all
+        document
+          .querySelectorAll(".app-view")
+          .forEach((el) => el.classList.add("hidden"));
+
+        // Logic per view
+        if (viewName === "game" && param) {
+          loadGameDetail(param);
+        }
+
+        if (viewName === "cart") {
+          renderCart();
+        }
+
+        if (viewName === "checkout") {
+          document.getElementById("checkout-total").innerText =
+            document.getElementById("cart-total").innerText;
+        }
+
+        // Show target
+        const target = document.getElementById(`view-${viewName}`);
+        if (target) target.classList.remove("hidden");
+        window.scrollTo(0, 0);
+      }
+
+      // --- FUNCTIONS ---
+
+      function toggleMobileMenu() {
+        const menu = document.getElementById("mobile-menu");
+        menu.classList.toggle("hidden");
+      }
+
+      function loadGameDetail(gameId) {
+        const game = gamesDB[gameId];
+        if (!game) return;
+
+        currentGameId = gameId; // store for adding to cart
+        document.getElementById("detail-breadcrumb").innerText = game.title;
+        document.getElementById("detail-title").innerText = game.title;
+        document.getElementById("detail-image").src = game.image;
+        document.getElementById("detail-header").src = game.image;
+        document.getElementById("detail-desc").innerText = game.desc;
+        document.getElementById("detail-buy-title").innerText = game.title;
+        document.getElementById("detail-price").innerText = "$" + game.price;
+
+        // Setup Add to Cart button
+        const btn = document.getElementById("btn-add-cart");
+        btn.onclick = () => addToCart(game);
+      }
+
+      // UPDATED ADD TO CART LOGIC
+      function addToCart(game) {
+        // Check if already in cart
+        if (!cart.find((g) => g.id === game.id)) {
+          cart.push(game);
+        }
+
+        // Populate Modal Data
+        document.getElementById("modal-game-img").src = game.image;
+        document.getElementById("modal-game-title").innerText = game.title;
+        document.getElementById("modal-game-price").innerText =
+          "$" + game.price;
+        document.getElementById("modal-cart-count").innerText = cart.length;
+
+        // Show Modal
+        const modal = document.getElementById("added-to-cart-modal");
+        modal.classList.remove("hidden");
+      }
+
+      function closeModal() {
+        document.getElementById("added-to-cart-modal").classList.add("hidden");
+      }
+
+      function removeFromCart(index) {
+        cart.splice(index, 1);
+        renderCart();
+      }
+
+      function renderCart() {
+        const container = document.getElementById("cart-items-container");
+        const emptyMsg = document.getElementById("cart-empty");
+        const totalEl = document.getElementById("cart-total");
+
+        container.innerHTML = "";
+        let total = 0;
+
+        if (cart.length === 0) {
+          emptyMsg.classList.remove("hidden");
+        } else {
+          emptyMsg.classList.add("hidden");
+
+          cart.forEach((game, index) => {
+            total += game.price;
+            const itemHTML = `
+                        <div class="bg-[#16202d] p-4 flex gap-4 items-center mb-1 border-l-4 border-[#3a455a]">
+                            <img src="${game.image}" class="w-28 h-12 object-cover">
+                            <div class="flex-grow">
+                                <div class="text-white text-sm font-medium">${game.title}</div>
+                                <div onclick="removeFromCart(${index})" class="text-[10px] text-[#56707f] cursor-pointer hover:underline hover:text-white">Remove</div>
+                            </div>
+                            <div class="text-white font-medium">$${game.price}</div>
+                        </div>
+                    `;
+            container.innerHTML += itemHTML;
+          });
+        }
+
+        totalEl.innerText = "$" + total.toFixed(2);
+      }
+
+      function checkAuthAndProceed() {
+        if (cart.length === 0) {
+          alert("Your cart is empty!");
+          return;
+        }
+        if (isLoggedIn) {
+          router("checkout");
+        } else {
+          router("login");
+        }
+      }
+
+      function doLogin() {
+        const btn = document.querySelector("#view-login button");
+        const originalText = btn.innerText;
+        btn.innerText = "Verifying...";
+
+        setTimeout(() => {
+          isLoggedIn = true;
+          btn.innerText = originalText;
+          document.getElementById("user-status").innerHTML = `
+                    <span class="text-[#66c0f4] font-bold truncate max-w-[100px]">GamerOne</span>
+                    <img src="https://placehold.co/32x32/66c0f4/000" class="w-6 h-6 rounded border border-[#66c0f4]">
+                `;
+          router("checkout");
+        }, 800);
+      }
+
+      function processPayment() {
+        const errorBox = document.getElementById("payment-error");
+        errorBox.classList.add("hidden");
+
+        const btn = document.querySelector("#view-checkout button");
+        btn.innerText = "Processing...";
+        btn.classList.add("opacity-50", "pointer-events-none");
+
+        setTimeout(() => {
+          const shouldFail = Math.random() > 0.5;
+
+          if (shouldFail) {
+            errorBox.classList.remove("hidden");
+            const paymentForm = document.getElementById("payment-form");
+            paymentForm.classList.add("shake");
+            setTimeout(() => paymentForm.classList.remove("shake"), 500);
+            btn.innerText = "Purchase";
+            btn.classList.remove("opacity-50", "pointer-events-none");
+          } else {
+            btn.innerText = "Purchase";
+            btn.classList.remove("opacity-50", "pointer-events-none");
+            router("success");
+          }
+        }, 1500);
+      }
+
+      function goToLibraryAndInstall() {
+        router("library");
+
+        // Add purchased games to library list visual
+        const libList = document.getElementById("library-list");
+        cart.forEach((game) => {
+          // Avoid duplicates in visual list
+          if (!libList.innerHTML.includes(game.title)) {
+            libList.innerHTML += `<div class="px-2 py-1 text-white bg-[#3d4450] text-sm font-bold cursor-pointer border-l-4 border-[#66c0f4]">${game.title}</div>`;
+          }
+        });
+
+        // Just simulate installing the LAST game added for demo purposes
+        if (cart.length > 0) {
+          document.getElementById("lib-game-title").innerText =
+            cart[cart.length - 1].title;
+        }
+
+        // Clear Cart after purchase
+        cart = [];
+        renderCart();
+
+        const progressBar = document.getElementById("progress-bar");
+        const percentText = document.getElementById("download-percent");
+        const downloadUI = document.getElementById("download-ui");
+        const playUI = document.getElementById("play-ui");
+
+        downloadUI.classList.remove("hidden");
+        playUI.classList.add("hidden");
+        progressBar.style.width = "0%";
+
+        let width = 0;
+        const interval = setInterval(() => {
+          if (width >= 100) {
+            clearInterval(interval);
+            downloadUI.classList.add("hidden");
+            playUI.classList.remove("hidden");
+          } else {
+            width++;
+            progressBar.style.width = width + "%";
+            percentText.innerText = width + "%";
+          }
+        }, 30);
+      }
+
+      // Init
+      window.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("mode") === "figma") {
+          document.body.classList.add("figma-mode");
+          document
+            .querySelectorAll(".app-view")
+            .forEach((el) => el.classList.remove("hidden"));
+        } else {
+          router("store");
+        }
+      });
+    </script>
+  </body>
+</html>
