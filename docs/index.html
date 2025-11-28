@@ -1,1475 +1,935 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Store Replica</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Motiva+Sans:wght@300;400;500;700&display=swap");
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Motiva Sans', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1b2838;
+            color: #c6d4df;
+            overflow-x: hidden;
+        }
 
-      body {
-        font-family: "Motiva Sans", "Segoe UI", Tahoma, Geneva, Verdana,
-          sans-serif;
-        background-color: #1b2838;
-        color: #c6d4df;
-        overflow-x: hidden;
-      }
+        /* --- HOVER POPUP STYLES --- */
+        #game-hover-popup {
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-out; /* Added smooth movement */
+            box-shadow: 0 0 10px #000000;
+            z-index: 9999;
+        }
 
-      /* --- HOVER POPUP STYLES --- */
-      #game-hover-popup {
-        pointer-events: none; /* Let mouse pass through so it doesn't flicker */
-        transition: opacity 0.2s ease-in-out;
-        box-shadow: 0 0 10px #000000;
-        z-index: 9999; /* Top of everything */
-      }
+        /* --- AD BANNER STYLES (Frosted Glass) --- */
+        .ad-banner-container {
+            position: relative;
+            border-bottom: 1px solid #000;
+            overflow: hidden;
+            transition: filter 0.3s ease; /* Smooth brightness on hover */
+        }
 
-      /* --- AD BANNER STYLES (Frosted Glass) --- */
-      .ad-banner-container {
-        position: relative;
-        border-bottom: 1px solid #000;
-        /* Shadow removed as requested */
-        /* box-shadow: 0 10px 20px rgba(0,0,0,0.5); */
-        overflow: hidden;
-      }
+        .ad-banner-pattern {
+            background-color: #0d121a;
+            background-image: 
+                linear-gradient(45deg, #101622 25%, transparent 25%, transparent 75%, #101622 75%, #101622), 
+                linear-gradient(45deg, #101622 25%, transparent 25%, transparent 75%, #101622 75%, #101622);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
 
-      .ad-banner-pattern {
-        background-color: #0d121a;
-        background-image: linear-gradient(
-            45deg,
-            #101622 25%,
-            transparent 25%,
-            transparent 75%,
-            #101622 75%,
-            #101622
-          ),
-          linear-gradient(
-            45deg,
-            #101622 25%,
-            transparent 25%,
-            transparent 75%,
-            #101622 75%,
-            #101622
-          );
-        background-size: 20px 20px;
-        background-position: 0 0, 10px 10px;
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-      }
+        .ad-banner-glass {
+            background: rgba(27, 40, 56, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            position: relative;
+            z-index: 10;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-      .ad-banner-glass {
-        background: rgba(27, 40, 56, 0.4);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        position: relative;
-        z-index: 10;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-      }
+        /* --- GLASS BOX STYLE --- */
+        .glass-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.3s ease, border-color 0.3s ease; /* Restored transition */
+        }
+        .glass-box:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
 
-      /* --- GLASS BOX STYLE (Modern Placeholder) --- */
-      .glass-box {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
+        /* --- FIGMA MODE --- */
+        body.figma-mode { overflow-y: auto !important; }
+        body.figma-mode .app-view {
+            display: block !important;
+            margin-bottom: 100px;
+            border: 2px dashed #66c0f4;
+            position: relative;
+        }
+        body.figma-mode .app-view::before {
+            content: attr(id);
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #66c0f4;
+            color: black;
+            padding: 4px 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
 
-      /* --- FIGMA MODE --- */
-      body.figma-mode {
-        overflow-y: auto !important;
-      }
-      body.figma-mode .app-view {
-        display: block !important;
-        margin-bottom: 100px;
-        border: 2px dashed #66c0f4;
-        position: relative;
-      }
-      body.figma-mode .app-view::before {
-        content: attr(id);
-        position: absolute;
-        top: -30px;
-        left: 0;
-        background: #66c0f4;
-        color: black;
-        padding: 4px 10px;
-        font-weight: bold;
-        text-transform: uppercase;
-      }
+        /* SPECIAL LOGIC FOR MODAL IN FIGMA MODE */
+        body.figma-mode #added-to-cart-modal {
+            display: flex !important;
+            position: relative !important;
+            inset: auto !important;
+            background-color: transparent !important;
+            height: auto !important;
+            padding: 50px 0;
+            border: 2px dashed #d2efa9;
+            margin-bottom: 50px;
+            z-index: 1;
+        }
+        body.figma-mode #added-to-cart-modal::before {
+            content: "POPUP MODAL COMPONENT";
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #d2efa9;
+            color: black;
+            padding: 4px 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
 
-      /* SPECIAL LOGIC FOR MODAL IN FIGMA MODE */
-      body.figma-mode #added-to-cart-modal {
-        display: flex !important;
-        position: relative !important;
-        inset: auto !important;
-        background-color: transparent !important;
-        height: auto !important;
-        padding: 50px 0;
-        border: 2px dashed #d2efa9;
-        margin-bottom: 50px;
-        z-index: 1;
-      }
-      body.figma-mode #added-to-cart-modal::before {
-        content: "POPUP MODAL COMPONENT";
-        position: absolute;
-        top: -30px;
-        left: 0;
-        background: #d2efa9;
-        color: black;
-        padding: 4px 10px;
-        font-weight: bold;
-        text-transform: uppercase;
-      }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 12px; background: #171a21; }
+        ::-webkit-scrollbar-thumb { background: #417a9b; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: #66c0f4; }
 
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 12px;
-        background: #171a21;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #417a9b;
-        border-radius: 6px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #66c0f4;
-      }
+        /* Gradients & Buttons */
+        .btn-green {
+            background: linear-gradient( to bottom, #78b928 5%, #639823 95%);
+            color: #d2efa9;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.3);
+            transition: all 0.2s ease-in-out; /* Restored transition */
+        }
+        .btn-green:hover {
+            background: linear-gradient( to bottom, #8ed633 5%, #76b129 95%);
+            color: white;
+            transform: scale(1.02);
+        }
+        
+        .btn-blue {
+            background: linear-gradient( to bottom, rgba(47,137,188,1) 5%, rgba(23,67,92,1) 95%);
+            transition: all 0.2s ease-in-out; /* Restored transition */
+        }
+        .btn-blue:hover {
+            background: linear-gradient( to bottom, rgba(102,192,244,1) 5%, rgba(47,137,188,1) 95%);
+        }
 
-      /* Gradients & Buttons */
-      .btn-green {
-        background: linear-gradient(to bottom, #78b928 5%, #639823 95%);
-        color: #d2efa9;
-        text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.3);
-      }
+        /* Cart Button specific style */
+        .btn-cart-nav {
+            background: linear-gradient(to bottom, #729b1d 5%, #587915 95%);
+            color: #d2efa9;
+        }
 
-      .btn-blue {
-        background: linear-gradient(
-          to bottom,
-          rgba(47, 137, 188, 1) 5%,
-          rgba(23, 67, 92, 1) 95%
-        );
-      }
+        .btn-steam-blue-small {
+            background-color: #5c7e10;
+            background: linear-gradient( to bottom, #214264 5%, #18314e 95%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-size: 11px;
+        }
 
-      /* Cart Button specific style */
-      .btn-cart-nav {
-        background: linear-gradient(to bottom, #729b1d 5%, #587915 95%);
-        color: #d2efa9;
-      }
+        /* Updated Search Bar Styles */
+        .search-bg { 
+            background-color: #316282; 
+            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3); 
+            border-radius: 3px 0 0 3px;
+        }
+        .search-btn-blue { 
+            background-color: #21a3ff; 
+            color: white;
+            border-radius: 0 3px 3px 0;
+            box-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+            transition: background-color 0.2s;
+        }
+        .search-btn-blue:hover { background-color: #4cb5ff; }
 
-      .btn-steam-blue-small {
-        background-color: #5c7e10; /* Fallback */
-        background: linear-gradient(to bottom, #214264 5%, #18314e 95%);
-        color: white;
-        padding: 2px 8px;
-        border-radius: 2px;
-        font-size: 11px;
-      }
+        .input-dark { background: #32353c; border: 1px solid #000; color: white; padding: 8px; border-radius: 2px; width: 100%; outline: none; font-size: 14px; box-shadow: inset 0 0 4px #000000; transition: border-color 0.2s; }
+        .input-dark:focus { border-color: #66c0f4; }
+        
+        /* RESTORED ANIMATIONS */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-      /* Updated Search Bar Styles */
-      .search-bg {
-        background-color: #316282;
-        box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.3);
-        border-radius: 3px 0 0 3px;
-      }
-      .search-btn-blue {
-        background-color: #21a3ff;
-        color: white;
-        border-radius: 0 3px 3px 0;
-        box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
-      }
-      .search-btn-blue:hover {
-        background-color: #4cb5ff;
-      }
+        .slide-down { animation: slideDown 0.3s ease-out forwards; }
+        @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-      .input-dark {
-        background: #32353c;
-        border: 1px solid #000;
-        color: white;
-        padding: 8px;
-        border-radius: 2px;
-        width: 100%;
-        outline: none;
-        font-size: 14px;
-        box-shadow: inset 0 0 4px #000000;
-        transition: border-color 0.2s;
-      }
-      .input-dark:focus {
-        border-color: #66c0f4;
-      }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
 
-      /* Animations Removed for Figma Import Stability */
-      .fade-in {
-        animation: none;
-        opacity: 1;
-      }
-      .slide-down {
-        animation: none;
-      }
-      .shake {
-        animation: none;
-      }
+        /* --- LIQUID GLASSMORPHISM ANIMATIONS RESTORED --- */
+        .liquid-container { position: relative; overflow: hidden; background: #0f1217; }
+        .blob { 
+            position: absolute; 
+            border-radius: 50%; 
+            filter: blur(50px); 
+            opacity: 0.7; 
+            z-index: 1;
+            animation: drift 8s infinite alternate ease-in-out; /* Animation Back */
+        }
+        .blob-1 { top: -20%; left: -20%; width: 500px; height: 500px; background: #1a9fff; animation-delay: 0s; }
+        .blob-2 { bottom: -20%; right: -10%; width: 400px; height: 400px; background: #66c0f4; animation-delay: -2s; }
+        .blob-3 { top: 30%; left: 40%; width: 300px; height: 300px; background: #c238c4; animation-delay: -4s; }
+        
+        @keyframes drift { 
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); } 
+            50% { transform: translate(20px, 30px) scale(1.1) rotate(10deg); } 
+            100% { transform: translate(-20px, 10px) scale(0.9) rotate(-5deg); } 
+        }
 
-      /* --- LIQUID GLASSMORPHISM (Static for Figma) --- */
-      .liquid-container {
-        position: relative;
-        overflow: hidden;
-        background: #0f1217;
-      }
-      .blob {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(50px);
-        opacity: 0.7;
-        z-index: 1;
-      }
-      .blob-1 {
-        top: -20%;
-        left: -20%;
-        width: 500px;
-        height: 500px;
-        background: #1a9fff;
-      }
-      .blob-2 {
-        bottom: -20%;
-        right: -10%;
-        width: 400px;
-        height: 400px;
-        background: #66c0f4;
-      }
-      .blob-3 {
-        top: 30%;
-        left: 40%;
-        width: 300px;
-        height: 300px;
-        background: #c238c4;
-      }
-      .glass-overlay {
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(20px);
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+        .glass-overlay { position: absolute; inset: 0; z-index: 2; background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E"); display: flex; align-items: center; justify-content: center; }
     </style>
-  </head>
-  <body class="flex flex-col min-h-screen">
+</head>
+<body class="flex flex-col min-h-screen">
+
     <!-- GAME HOVER POPUP (Hidden Default) -->
-    <div
-      id="game-hover-popup"
-      class="fixed hidden w-[300px] bg-[#1b2838] border border-black p-3 fade-in"
-    >
-      <div class="mb-2">
-        <h3
-          id="popup-title"
-          class="text-white text-[15px] font-medium truncate"
-        >
-          Game Title
-        </h3>
-        <div id="popup-date" class="text-[#8f98a0] text-[11px]">
-          Released: Nov 19, 2025
+    <div id="game-hover-popup" class="fixed hidden w-[300px] bg-[#1b2838] border border-black p-3 fade-in">
+        <div class="mb-2">
+            <h3 id="popup-title" class="text-white text-[15px] font-medium truncate">Game Title</h3>
+            <div id="popup-date" class="text-[#8f98a0] text-[11px]">Released: Nov 19, 2025</div>
         </div>
-      </div>
-
-      <!-- Screenshots Area -->
-      <div class="mb-2 space-y-1">
-        <div
-          id="popup-img-main"
-          class="w-full h-24 bg-[#0f1217] object-cover"
-        ></div>
-        <div class="flex gap-1">
-          <div class="w-1/3 h-8 bg-[#0f1217] opacity-60"></div>
-          <div class="w-1/3 h-8 bg-[#0f1217] opacity-60"></div>
-          <div class="w-1/3 h-8 bg-[#0f1217] opacity-60"></div>
+        
+        <!-- Screenshots Area -->
+        <div class="mb-2 space-y-1">
+            <div id="popup-img-main" class="w-full h-24 bg-[#0f1217] object-cover transition-all duration-300"></div>
+            <div class="flex gap-1">
+                <div class="w-1/3 h-8 bg-[#0f1217] opacity-60"></div>
+                <div class="w-1/3 h-8 bg-[#0f1217] opacity-60"></div>
+                <div class="w-1/3 h-8 bg-[#0f1217] opacity-60"></div>
+            </div>
         </div>
-      </div>
 
-      <!-- Review Block -->
-      <div class="bg-[#233c5166] p-2 mb-2 rounded-sm">
-        <div class="text-[11px] text-[#c6d4df]">Overall User Reviews:</div>
-        <div class="text-[12px] text-[#66c0f4] leading-tight">
-          <span id="popup-review-summary" class="font-medium"
-            >Very Positive</span
-          >
-          <span id="popup-review-count" class="text-[#8f98a0]">(14,302)</span>
+        <!-- Review Block -->
+        <div class="bg-[#233c5166] p-2 mb-2 rounded-sm">
+            <div class="text-[11px] text-[#c6d4df]">Overall User Reviews:</div>
+            <div class="text-[12px] text-[#66c0f4] leading-tight">
+                <span id="popup-review-summary" class="font-medium">Very Positive</span> 
+                <span id="popup-review-count" class="text-[#8f98a0]">(14,302)</span>
+            </div>
         </div>
-      </div>
 
-      <!-- Tags -->
-      <div id="popup-tags" class="flex flex-wrap gap-1">
-        <!-- Tags injected here -->
-      </div>
+        <!-- Tags -->
+        <div id="popup-tags" class="flex flex-wrap gap-1">
+            <!-- Tags injected here -->
+        </div>
     </div>
 
     <!-- ADDED TO CART MODAL -->
-    <div
-      id="added-to-cart-modal"
-      class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm"
-    >
-      <div
-        class="bg-[#1b2838] w-full max-w-2xl shadow-2xl border border-[#000] relative mx-4"
-      >
-        <div class="p-4 flex justify-between items-center bg-[#1b2838]">
-          <h2 class="text-xl md:text-2xl font-bold text-white tracking-wide">
-            Added to your cart!
-          </h2>
-          <button
-            onclick="closeModal()"
-            class="text-[#66c0f4] hover:text-white text-xl"
-          >
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="bg-[#2a3f5a] p-1">
-          <div
-            class="bg-[#1b2838] p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6"
-          >
-            <div
-              id="modal-game-img"
-              class="glass-box w-full md:w-48 h-32 md:h-28 shadow-lg border border-black/50"
-            ></div>
-            <div class="flex-grow flex flex-col justify-between gap-4 md:gap-0">
-              <div>
-                <h3
-                  id="modal-game-title"
-                  class="text-white text-lg font-medium mb-1"
-                >
-                  Game Title
-                </h3>
-                <div class="text-[#8f98a0] text-sm flex gap-2">
-                  <i class="fab fa-windows"></i> <i class="fab fa-steam"></i>
-                </div>
-              </div>
-              <div class="flex justify-between items-end">
-                <div class="relative">
-                  <select
-                    class="bg-[#3d4450] text-white text-sm px-3 py-1.5 rounded border border-black shadow-inner outline-none cursor-pointer hover:bg-[#414b59]"
-                  >
-                    <option>For my account</option>
-                    <option>For my account: private</option>
-                    <option>This is a gift</option>
-                  </select>
-                </div>
-                <div class="text-right">
-                  <div
-                    id="modal-game-price"
-                    class="text-white font-medium mb-1"
-                  >
-                    $0.00
-                  </div>
-                  <div
-                    class="text-[11px] text-[#56707f] hover:text-white cursor-pointer underline"
-                  >
-                    Add | Remove
-                  </div>
-                </div>
-              </div>
+    <div id="added-to-cart-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm fade-in">
+        <div class="bg-[#1b2838] w-full max-w-2xl shadow-2xl border border-[#000] relative mx-4">
+            <div class="p-4 flex justify-between items-center bg-[#1b2838]">
+                <h2 class="text-xl md:text-2xl font-bold text-white tracking-wide">Added to your cart!</h2>
+                <button onclick="closeModal()" class="text-[#66c0f4] hover:text-white text-xl"><i class="fas fa-times"></i></button>
             </div>
-          </div>
+            <div class="bg-[#2a3f5a] p-1">
+                <div class="bg-[#1b2838] p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6">
+                    <div id="modal-game-img" class="glass-box w-full md:w-48 h-32 md:h-28 shadow-lg border border-black/50"></div>
+                    <div class="flex-grow flex flex-col justify-between gap-4 md:gap-0">
+                        <div>
+                            <h3 id="modal-game-title" class="text-white text-lg font-medium mb-1">Game Title</h3>
+                            <div class="text-[#8f98a0] text-sm flex gap-2"><i class="fab fa-windows"></i> <i class="fab fa-steam"></i></div>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div class="relative">
+                                <select class="bg-[#3d4450] text-white text-sm px-3 py-1.5 rounded border border-black shadow-inner outline-none cursor-pointer hover:bg-[#414b59] transition">
+                                    <option>For my account</option>
+                                    <option>For my account: private</option>
+                                    <option>This is a gift</option>
+                                </select>
+                            </div>
+                            <div class="text-right">
+                                <div id="modal-game-price" class="text-white font-medium mb-1">$0.00</div>
+                                <div class="text-[11px] text-[#56707f] hover:text-white cursor-pointer underline">Add | Remove</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 md:p-6 flex flex-col md:flex-row gap-4 justify-between bg-[#1b2838]">
+                <button onclick="closeModal()" class="bg-[#3d4450] text-white hover:bg-[#414b59] px-6 py-3 rounded-sm text-sm font-medium transition w-full md:w-1/2">Continue Shopping</button>
+                <button onclick="router('cart'); closeModal()" class="bg-gradient-to-r from-[#47bfff] to-[#1a44c2] text-white hover:from-[#66c0f4] hover:to-[#2558f5] px-6 py-3 rounded-sm text-sm font-medium transition w-full md:w-1/2 shadow-lg">View My Cart (<span id="modal-cart-count">1</span>)</button>
+            </div>
         </div>
-        <div
-          class="p-4 md:p-6 flex flex-col md:flex-row gap-4 justify-between bg-[#1b2838]"
-        >
-          <button
-            onclick="closeModal()"
-            class="bg-[#3d4450] text-white hover:bg-[#414b59] px-6 py-3 rounded-sm text-sm font-medium transition w-full md:w-1/2"
-          >
-            Continue Shopping
-          </button>
-          <button
-            onclick="router('cart'); closeModal()"
-            class="bg-gradient-to-r from-[#47bfff] to-[#1a44c2] text-white hover:from-[#66c0f4] hover:to-[#2558f5] px-6 py-3 rounded-sm text-sm font-medium transition w-full md:w-1/2 shadow-lg"
-          >
-            View My Cart (<span id="modal-cart-count">1</span>)
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- 1. TOP HEADER (Super Thin) -->
     <div class="bg-[#171a21] py-1 text-[10px] text-[#b8b6b4] relative z-50">
-      <div
-        class="max-w-[1200px] mx-auto px-4 flex justify-end gap-4 items-center"
-      >
-        <a
-          href="#"
-          class="bg-[#5c7e10] hover:bg-[#6c9412] px-2 py-0.5 rounded text-white flex items-center gap-1 transition"
-        >
-          <i class="fas fa-download"></i> Install Steam
-        </a>
-        <a href="#" class="hover:text-white flex items-center gap-1"
-          ><i class="fas fa-bell"></i
-        ></a>
-        <div class="flex items-center gap-1 cursor-pointer hover:text-white">
-          <span id="header-username">username</span>
-          <i class="fas fa-caret-down"></i>
-          <div
-            class="w-5 h-5 rounded-sm border border-[#66c0f4] glass-box"
-          ></div>
+        <div class="max-w-[1200px] mx-auto px-4 flex justify-end gap-4 items-center">
+            <a href="#" class="bg-[#5c7e10] hover:bg-[#6c9412] px-2 py-0.5 rounded text-white flex items-center gap-1 transition">
+                <i class="fas fa-download"></i> Install Steam
+            </a>
+            <a href="#" class="hover:text-white flex items-center gap-1"><i class="fas fa-bell"></i></a>
+            <div class="flex items-center gap-1 cursor-pointer hover:text-white">
+                <span id="header-username">buroooo</span>
+                <i class="fas fa-caret-down"></i>
+                <div class="w-5 h-5 rounded-sm border border-[#66c0f4] glass-box"></div>
+            </div>
         </div>
-      </div>
     </div>
 
     <!-- 2. MAIN NAV HEADER -->
     <header class="bg-[#171a21] py-4 md:py-6 px-4 relative z-40">
-      <div class="max-w-[1200px] mx-auto flex items-center gap-8">
-        <!-- Logo -->
-        <a
-          href="#"
-          onclick="router('store')"
-          class="flex items-center gap-2 group flex-shrink-0"
-        >
-          <i
-            class="fa-brands fa-steam text-4xl text-[#c5c3c0] group-hover:text-white"
-          ></i>
-          <span
-            class="text-2xl font-bold tracking-wider text-[#c5c3c0] group-hover:text-white uppercase hidden sm:block"
-            >STEAM</span
-          >
-        </a>
+        <div class="max-w-[1200px] mx-auto flex items-center gap-8">
+            <!-- Logo -->
+            <a href="#" onclick="router('store')" class="flex items-center gap-2 group flex-shrink-0">
+                <i class="fa-brands fa-steam text-4xl text-[#c5c3c0] group-hover:text-white transition"></i>
+                <span class="text-2xl font-bold tracking-wider text-[#c5c3c0] group-hover:text-white uppercase hidden sm:block">STEAM</span>
+            </a>
 
-        <!-- Desktop Nav -->
-        <nav
-          class="hidden md:flex gap-6 text-sm font-bold text-[#b8b6b4] uppercase tracking-wide"
-        >
-          <a
-            href="#"
-            onclick="router('store')"
-            class="text-[#1a9fff] border-b-2 border-[#1a9fff] pb-1"
-            >Store</a
-          >
-          <a href="#" class="hover:text-white">Community</a>
-          <a href="#" class="hover:text-white">Username</a>
-          <a href="#" class="hover:text-white">Chat</a>
-          <a href="#" class="hover:text-white">Support</a>
-        </nav>
-
-        <button
-          onclick="toggleMobileMenu()"
-          class="md:hidden ml-auto text-[#c5c3c0] text-2xl"
-        >
-          <i class="fas fa-bars"></i>
-        </button>
-      </div>
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex gap-6 text-sm font-bold text-[#b8b6b4] uppercase tracking-wide">
+                <a href="#" onclick="router('store')" class="text-[#1a9fff] border-b-2 border-[#1a9fff] pb-1 transition hover:text-[#21a3ff]">Store</a>
+                <a href="#" class="hover:text-white transition">Community</a>
+                <a href="#" class="hover:text-white transition">Buroooo</a>
+                <a href="#" class="hover:text-white transition">Chat</a>
+                <a href="#" class="hover:text-white transition">Support</a>
+            </nav>
+            
+            <button onclick="toggleMobileMenu()" class="md:hidden ml-auto text-[#c5c3c0] text-2xl"><i class="fas fa-bars"></i></button>
+        </div>
     </header>
 
     <!-- 3. STORE SUB-NAV BAR (UPDATED TO MATCH SCREENSHOT EXACTLY) -->
-    <div
-      class="bg-[rgba(62,100,133,0.9)] shadow-lg sticky top-0 z-30 h-[35px] flex items-center"
-    >
-      <div
-        class="max-w-[1200px] mx-auto px-4 w-full flex items-center justify-between h-full"
-      >
-        <!-- Left Links with Dropdowns -->
-        <div
-          class="flex items-center gap-6 text-[13px] font-medium text-[#dcdedf] h-full"
-        >
-          <div
-            class="group h-full flex items-center cursor-pointer hover:text-white text-shadow-sm"
-          >
-            Browse
-            <i class="fas fa-angle-down ml-1 text-[10px] mt-0.5 opacity-80"></i>
-          </div>
-          <div
-            class="group h-full flex items-center cursor-pointer hover:text-white text-shadow-sm"
-          >
-            Recommendations
-            <i class="fas fa-angle-down ml-1 text-[10px] mt-0.5 opacity-80"></i>
-          </div>
-          <div
-            class="group h-full flex items-center cursor-pointer hover:text-white text-shadow-sm"
-          >
-            Categories
-            <i class="fas fa-angle-down ml-1 text-[10px] mt-0.5 opacity-80"></i>
-          </div>
-          <div
-            class="group h-full flex items-center cursor-pointer hover:text-white text-shadow-sm"
-          >
-            Ways to Play
-            <i class="fas fa-angle-down ml-1 text-[10px] mt-0.5 opacity-80"></i>
-          </div>
-          <div
-            class="group h-full flex items-center cursor-pointer hover:text-white text-shadow-sm"
-          >
-            Special Sections
-            <i class="fas fa-angle-down ml-1 text-[10px] mt-0.5 opacity-80"></i>
-          </div>
+    <div class="bg-[rgba(62,100,133,0.9)] shadow-lg sticky top-0 z-30 h-[35px] flex items-center">
+        <div class="max-w-[1200px] mx-auto px-4 w-full flex items-center justify-between h-full">
+            
+            <!-- Left Links with Dropdowns -->
+            <div class="flex items-center gap-6 text-[13px] font-medium text-[#dcdedf] h-full">
+                <div class="group h-full flex items-center cursor-pointer hover:text-white text-shadow-sm transition">
+                    Browse <i class="fas fa-angle-down ml-1 text-[10px] mt-0.5 opacity-80"></i>
+                </div>
+                <div class="group h-full flex items-center cursor-pointer hover:text-white text-shadow-sm transition">
+                    Recommendations <i class="fas fa-angle-down ml-1 text-[10px] mt-0.5 opacity-80"></i>
+                </div>
+                <div class="group h-full flex items-center cursor-pointer hover:text-white text-shadow-sm transition">
+                    Categories <i class="fas fa-angle-down ml-1 text-[10px] mt-0.5 opacity-80"></i>
+                </div>
+                <div class="group h-full flex items-center cursor-pointer hover:text-white text-shadow-sm transition">
+                    Ways to Play <i class="fas fa-angle-down ml-1 text-[10px] mt-0.5 opacity-80"></i>
+                </div>
+                <div class="group h-full flex items-center cursor-pointer hover:text-white text-shadow-sm transition">
+                    Special Sections <i class="fas fa-angle-down ml-1 text-[10px] mt-0.5 opacity-80"></i>
+                </div>
+            </div>
+
+            <!-- Right Actions (Search, Wishlist, Cart) -->
+            <div class="flex items-center gap-3 h-full py-1">
+                <!-- Search -->
+                <div class="relative group h-[28px] flex items-center">
+                    <input type="text" placeholder="Search the store" class="search-bg text-white pl-3 pr-2 py-0.5 outline-none w-48 text-sm border border-[rgba(0,0,0,0.5)] h-full transition placeholder-[#969696] font-style-italic italic focus:border-[#66c0f4] focus:placeholder-white">
+                    <button class="h-full px-3 search-btn-blue flex items-center justify-center cursor-pointer">
+                        <i class="fas fa-search text-white text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Wishlist -->
+                <a href="#" class="text-[#b8b6b4] hover:text-white text-[11px] px-2 h-[24px] flex items-center transition bg-[#00000033] hover:bg-[#ffffff1a] rounded-sm ml-1">
+                    <i class="fas fa-star mr-1.5"></i> Wishlist <span class="text-[#8f98a0] ml-1">26</span>
+                </a>
+
+                <!-- Cart Button (Bright Blue) -->
+                <a href="#" onclick="router('cart')" class="bg-[#5c7e10] bg-gradient-to-b from-[#799905] to-[#536904] hover:bg-[#6c9412] text-white text-[12px] px-3 h-[24px] flex items-center gap-2 rounded-[2px] font-medium transition shadow-md hover:brightness-110" style="background: linear-gradient(to bottom, #21a3ff 5%, #1a9fff 95%);">
+                    <i class="fas fa-shopping-cart"></i> Cart <span class="bg-[#0000004d] px-1.5 py-0 rounded-sm leading-none ml-1" id="nav-cart-count">1</span>
+                </a>
+            </div>
         </div>
-
-        <!-- Right Actions (Search, Wishlist, Cart) -->
-        <div class="flex items-center gap-3 h-full py-1">
-          <!-- Search -->
-          <div class="relative group h-[28px] flex items-center">
-            <input
-              type="text"
-              placeholder="Search the store"
-              class="search-bg text-white pl-3 pr-2 py-0.5 outline-none w-48 text-sm border border-[rgba(0,0,0,0.5)] h-full transition placeholder-[#969696] font-style-italic italic"
-            />
-            <button
-              class="h-full px-3 search-btn-blue flex items-center justify-center cursor-pointer"
-            >
-              <i class="fas fa-search text-white text-sm"></i>
-            </button>
-          </div>
-
-          <!-- Wishlist -->
-          <a
-            href="#"
-            class="text-[#b8b6b4] hover:text-white text-[11px] px-2 h-[24px] flex items-center transition bg-[#00000033] hover:bg-[#ffffff1a] rounded-sm ml-1"
-          >
-            <i class="fas fa-star mr-1.5"></i> Wishlist
-            <span class="text-[#8f98a0] ml-1">26</span>
-          </a>
-
-          <!-- Cart Button (Bright Blue) -->
-          <a
-            href="#"
-            onclick="router('cart')"
-            class="bg-[#5c7e10] bg-gradient-to-b from-[#799905] to-[#536904] hover:bg-[#6c9412] text-white text-[12px] px-3 h-[24px] flex items-center gap-2 rounded-[2px] font-medium transition shadow-md"
-            style="
-              background: linear-gradient(to bottom, #21a3ff 5%, #1a9fff 95%);
-            "
-          >
-            <i class="fas fa-shopping-cart"></i> Cart
-            <span
-              class="bg-[#0000004d] px-1.5 py-0 rounded-sm leading-none ml-1"
-              id="nav-cart-count"
-              >1</span
-            >
-          </a>
-        </div>
-      </div>
     </div>
 
     <!-- Content Area -->
     <main class="flex-grow w-full relative">
-      <!-- VIEW 1: STORE HOME -->
-      <div id="view-store" class="app-view fade-in">
-        <!-- BANNER GAMES ADS (UPDATED: No close button, no labels) -->
-        <div
-          id="banner-games-ads"
-          class="ad-banner-container cursor-pointer group relative"
-          onclick="router('game', 'magna')"
-        >
-          <!-- Background Pattern Layer -->
-          <div class="ad-banner-pattern"></div>
+        
+        <!-- VIEW 1: STORE HOME -->
+        <div id="view-store" class="app-view fade-in">
+            
+            <!-- BANNER GAMES ADS (UPDATED: No close button, no labels) -->
+            <div id="banner-games-ads" class="ad-banner-container cursor-pointer group relative transition hover:brightness-110" onclick="router('game', 'magna')">
+                <!-- Background Pattern Layer -->
+                <div class="ad-banner-pattern"></div>
+                
+                <!-- Liquid Glass Blobs (Anim) -->
+                <div class="blob blob-1"></div>
+                <div class="blob blob-2"></div>
+                <div class="blob blob-3"></div>
 
-          <!-- Liquid Glass Blobs (Static) -->
-          <div
-            class="blob blob-1"
-            style="top: -10%; left: -10%; width: 400px; height: 400px"
-          ></div>
-          <div
-            class="blob blob-2"
-            style="bottom: -10%; right: 10%; width: 300px; height: 300px"
-          ></div>
-          <div
-            class="blob blob-3"
-            style="
-              top: 20%;
-              left: 40%;
-              width: 250px;
-              height: 250px;
-              background: #47bfff;
-            "
-          ></div>
-
-          <!-- Glass Content Layer -->
-          <div class="ad-banner-glass py-12 md:py-16 text-center relative">
-            <!-- Designer Mockup Text -->
-            <h1
-              class="text-4xl md:text-6xl font-[200] text-white tracking-[0.2em] uppercase mb-2 drop-shadow-lg"
-            >
-              WE CAN PUT ADS HERE
-            </h1>
-            <div class="mt-4 text-[#8f98a0] text-xs italic">
-              *Example placement for promotional content
+                <!-- Glass Content Layer -->
+                <div class="ad-banner-glass py-12 md:py-16 text-center relative">
+                    <!-- Designer Mockup Text -->
+                    <h1 class="text-4xl md:text-6xl font-[200] text-white tracking-[0.2em] uppercase mb-2 drop-shadow-lg">WE CAN PUT ADS HERE</h1>
+                    <div class="mt-4 text-[#8f98a0] text-xs italic">*Example placement for promotional content</div>
+                </div>
             </div>
-          </div>
+
+            <div class="max-w-[1200px] mx-auto px-4 py-8">
+                
+                <!-- Section Header -->
+                <div class="text-white text-sm font-medium uppercase tracking-wide mb-2 flex items-center gap-2">
+                    Featured & Recommended
+                </div>
+                
+                <!-- CAROUSEL HERO (Added Hover Triggers) -->
+                <div onmouseenter="showGamePopup(this, 'lorem')" onmouseleave="hideGamePopup()" class="bg-[#0f1217] shadow-[0_0_20px_#000] mb-12 flex flex-col md:flex-row h-auto md:h-[350px] relative hover:shadow-2xl transition duration-300">
+                     <!-- Left Arrow -->
+                     <div class="absolute -left-12 top-0 bottom-0 w-12 flex items-center justify-center hover:bg-gradient-to-r from-transparent to-[#ffffff1a] cursor-pointer transition">
+                        <i class="fas fa-chevron-left text-4xl text-[#66c0f4]"></i>
+                     </div>
+
+                    <div class="md:w-[65%] relative overflow-hidden h-[250px] md:h-full cursor-pointer" onclick="router('game', 'lorem')">
+                        <div class="glass-box w-full h-full"></div>
+                    </div>
+                    
+                    <div class="md:w-[35%] p-4 flex flex-col justify-between bg-[#0f1217] bg-[url('https://placehold.co/400x600/0f1217/111.png')] bg-cover relative z-10 cursor-pointer" onclick="router('game', 'lorem')">
+                        <div>
+                            <h3 class="text-2xl text-white font-normal mb-4">Where Winds Meet</h3>
+                            
+                            <!-- Thumbnails Grid (Glass Boxes) -->
+                            <div class="grid grid-cols-2 gap-2 mb-4">
+                                <div class="glass-box h-12 w-full rounded-sm"></div>
+                                <div class="glass-box h-12 w-full rounded-sm"></div>
+                                <div class="glass-box h-12 w-full rounded-sm"></div>
+                                <div class="glass-box h-12 w-full rounded-sm"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-lg text-white font-medium mb-1">Now Available</div>
+                            <span class="bg-[#ffffff33] text-white text-[10px] px-1.5 py-0.5 rounded-sm inline-block mb-4">Top Seller</span>
+                            <div class="flex items-center justify-between">
+                                <div class="text-[11px] text-[#c6d4df]">Free To Play</div>
+                                <i class="fab fa-windows text-[#56707f]"></i>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Right Arrow -->
+                     <div class="absolute -right-12 top-0 bottom-0 w-12 flex items-center justify-center hover:bg-gradient-to-l from-transparent to-[#ffffff1a] cursor-pointer transition">
+                        <i class="fas fa-chevron-right text-4xl text-[#66c0f4]"></i>
+                     </div>
+                </div>
+
+                <!-- DISCOUNTS & EVENTS GRID (3 Columns) -->
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-white text-sm font-medium uppercase tracking-wide">Discounts & Events</div>
+                    <button class="border border-[#ffffff66] text-white text-[11px] px-2 py-1 rounded-sm hover:border-white uppercase tracking-wider transition">Browse More</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+                    
+                    <!-- Item 1: Ready or Not -->
+                    <div onmouseenter="showGamePopup(this, 'lorem')" onmouseleave="hideGamePopup()" onclick="router('game', 'lorem')" class="bg-[#0a141d] group cursor-pointer shadow-lg relative hover:shadow-xl transition transform hover:scale-[1.01]">
+                        <div class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"></div>
+                        <div class="p-2 bg-[#16202d]">
+                             <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1">-40%</div>
+                                    <div class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center">
+                                        <span class="text-[#738895] text-[10px] line-through decoration-1">$29.99</span>
+                                        <span class="text-[#beee11] text-sm leading-none">$17.99</span>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 2: COD -->
+                    <div onmouseenter="showGamePopup(this, 'dolor')" onmouseleave="hideGamePopup()" onclick="router('game', 'dolor')" class="bg-[#0a141d] group cursor-pointer shadow-lg relative hover:shadow-xl transition transform hover:scale-[1.01]">
+                        <div class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"></div>
+                        <div class="p-2 bg-[#16202d]">
+                             <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1">-67%</div>
+                                    <div class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center">
+                                        <span class="text-[#738895] text-[10px] line-through decoration-1">$59.99</span>
+                                        <span class="text-[#beee11] text-sm leading-none">$19.80</span>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 3: Battlefield -->
+                    <div onmouseenter="showGamePopup(this, 'ipsum')" onmouseleave="hideGamePopup()" onclick="router('game', 'ipsum')" class="bg-[#0a141d] group cursor-pointer shadow-lg relative hover:shadow-xl transition transform hover:scale-[1.01]">
+                        <div class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"></div>
+                        <div class="p-2 bg-[#16202d]">
+                             <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1">-15%</div>
+                                    <div class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center">
+                                        <span class="text-[#738895] text-[10px] line-through decoration-1">$69.99</span>
+                                        <span class="text-[#beee11] text-sm leading-none">$59.49</span>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECOND ROW (From Screenshot) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <!-- Item 4: Forza -->
+                     <div onmouseenter="showGamePopup(this, 'magna')" onmouseleave="hideGamePopup()" onclick="router('game', 'magna')" class="bg-[#0a141d] group cursor-pointer shadow-lg relative hover:shadow-xl transition transform hover:scale-[1.01]">
+                        <div class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"></div>
+                        <div class="p-2 bg-[#16202d]">
+                             <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1">-65%</div>
+                                    <div class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center">
+                                        <span class="text-[#738895] text-[10px] line-through decoration-1">$59.99</span>
+                                        <span class="text-[#beee11] text-sm leading-none">$20.99</span>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                    <!-- Item 5: Halo -->
+                    <div onmouseenter="showGamePopup(this, 'lorem')" onmouseleave="hideGamePopup()" onclick="router('game', 'lorem')" class="bg-[#0a141d] group cursor-pointer shadow-lg relative hover:shadow-xl transition transform hover:scale-[1.01]">
+                        <div class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"></div>
+                        <div class="p-2 bg-[#16202d]">
+                             <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1">-75%</div>
+                                    <div class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center">
+                                        <span class="text-[#738895] text-[10px] line-through decoration-1">$59.99</span>
+                                        <span class="text-[#beee11] text-sm leading-none">$14.99</span>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                    <!-- Item 6: RDR2 -->
+                    <div onmouseenter="showGamePopup(this, 'dolor')" onmouseleave="hideGamePopup()" onclick="router('game', 'dolor')" class="bg-[#0a141d] group cursor-pointer shadow-lg relative hover:shadow-xl transition transform hover:scale-[1.01]">
+                        <div class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"></div>
+                        <div class="p-2 bg-[#16202d]">
+                             <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1">-75%</div>
+                                    <div class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center">
+                                        <span class="text-[#738895] text-[10px] line-through decoration-1">$59.99</span>
+                                        <span class="text-[#beee11] text-sm leading-none">$14.99</span>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
-        <div class="max-w-[1200px] mx-auto px-4 py-8">
-          <!-- Section Header -->
-          <div
-            class="text-white text-sm font-medium uppercase tracking-wide mb-2 flex items-center gap-2"
-          >
-            Featured & Recommended
-          </div>
-
-          <!-- CAROUSEL HERO (Added Hover Triggers) -->
-          <div
-            onmouseenter="showGamePopup(this, 'lorem')"
-            onmouseleave="hideGamePopup()"
-            class="bg-[#0f1217] shadow-[0_0_20px_#000] mb-12 flex flex-col md:flex-row h-auto md:h-[350px] relative"
-          >
-            <!-- Left Arrow -->
-            <div
-              class="absolute -left-12 top-0 bottom-0 w-12 flex items-center justify-center hover:bg-gradient-to-r from-transparent to-[#ffffff1a] cursor-pointer"
-            >
-              <i class="fas fa-chevron-left text-4xl text-[#66c0f4]"></i>
+        <!-- VIEW 2: GAME DETAIL (Dynamic) -->
+        <div id="view-game" class="app-view hidden max-w-[940px] mx-auto px-4 py-6">
+            <div class="text-xs text-[#8f98a0] mb-4">
+                <a href="#" onclick="router('store')" class="hover:text-white">All Games</a> > <span>Action</span> > <span id="detail-breadcrumb">Game Title</span>
             </div>
+            
+            <h1 id="detail-title" class="text-3xl text-white font-medium mb-4">Game Title</h1>
 
-            <div
-              class="md:w-[65%] relative overflow-hidden h-[250px] md:h-full cursor-pointer"
-              onclick="router('game', 'lorem')"
-            >
-              <div class="glass-box w-full h-full"></div>
-            </div>
-
-            <div
-              class="md:w-[35%] p-4 flex flex-col justify-between bg-[#0f1217] bg-[url('https://placehold.co/400x600/0f1217/111.png')] bg-cover relative z-10 cursor-pointer"
-              onclick="router('game', 'lorem')"
-            >
-              <div>
-                <h3 class="text-2xl text-white font-normal mb-4">
-                  Where Winds Meet
-                </h3>
-
-                <!-- Thumbnails Grid (Glass Boxes) -->
-                <div class="grid grid-cols-2 gap-2 mb-4">
-                  <div class="glass-box h-12 w-full rounded-sm"></div>
-                  <div class="glass-box h-12 w-full rounded-sm"></div>
-                  <div class="glass-box h-12 w-full rounded-sm"></div>
-                  <div class="glass-box h-12 w-full rounded-sm"></div>
+            <div class="flex flex-col md:flex-row gap-4 mb-8">
+                <div class="md:w-2/3 bg-black aspect-video relative flex items-center justify-center border border-black overflow-hidden">
+                     <div class="glass-box w-full h-full"></div>
+                     <i class="fas fa-play-circle text-6xl text-white/50 hover:text-white/80 cursor-pointer transition absolute z-10"></i>
                 </div>
-              </div>
-
-              <div>
-                <div class="text-lg text-white font-medium mb-1">
-                  Now Available
-                </div>
-                <span
-                  class="bg-[#ffffff33] text-white text-[10px] px-1.5 py-0.5 rounded-sm inline-block mb-4"
-                  >Top Seller</span
-                >
-                <div class="flex items-center justify-between">
-                  <div class="text-[11px] text-[#c6d4df]">Free To Play</div>
-                  <i class="fab fa-windows text-[#56707f]"></i>
-                </div>
-              </div>
-            </div>
-            <!-- Right Arrow -->
-            <div
-              class="absolute -right-12 top-0 bottom-0 w-12 flex items-center justify-center hover:bg-gradient-to-l from-transparent to-[#ffffff1a] cursor-pointer"
-            >
-              <i class="fas fa-chevron-right text-4xl text-[#66c0f4]"></i>
-            </div>
-          </div>
-
-          <!-- DISCOUNTS & EVENTS GRID (3 Columns) -->
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-white text-sm font-medium uppercase tracking-wide">
-              Discounts & Events
-            </div>
-            <button
-              class="border border-[#ffffff66] text-white text-[11px] px-2 py-1 rounded-sm hover:border-white uppercase tracking-wider"
-            >
-              Browse More
-            </button>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-            <!-- Item 1: Ready or Not -->
-            <div
-              onmouseenter="showGamePopup(this, 'lorem')"
-              onmouseleave="hideGamePopup()"
-              onclick="router('game', 'lorem')"
-              class="bg-[#0a141d] group cursor-pointer shadow-lg relative"
-            >
-              <div
-                class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"
-              ></div>
-              <div class="p-2 bg-[#16202d]">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div
-                      class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1"
-                    >
-                      -40%
+                <div class="md:w-1/3 text-sm">
+                    <div class="glass-box w-full h-28 mb-3 shadow-md"></div>
+                    <p id="detail-desc" class="text-[#c6d4df] text-xs mb-4">
+                        Description goes here.
+                    </p>
+                    <div class="text-[11px] text-[#556772]">
+                        <div class="flex mb-1"><span class="w-24 uppercase">Reviews:</span> <span class="text-[#66c0f4]">Very Positive</span></div>
+                        <div class="flex mb-1"><span class="w-24 uppercase">Release Date:</span> <span class="text-[#8f98a0]">Nov 19, 2025</span></div>
                     </div>
-                    <div
-                      class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center"
-                    >
-                      <span
-                        class="text-[#738895] text-[10px] line-through decoration-1"
-                        >$29.99</span
-                      >
-                      <span class="text-[#beee11] text-sm leading-none"
-                        >$17.99</span
-                      >
-                    </div>
-                  </div>
                 </div>
-              </div>
             </div>
 
-            <!-- Item 2: COD -->
-            <div
-              onmouseenter="showGamePopup(this, 'dolor')"
-              onmouseleave="hideGamePopup()"
-              onclick="router('game', 'dolor')"
-              class="bg-[#0a141d] group cursor-pointer shadow-lg relative"
-            >
-              <div
-                class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"
-              ></div>
-              <div class="p-2 bg-[#16202d]">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div
-                      class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1"
-                    >
-                      -67%
-                    </div>
-                    <div
-                      class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center"
-                    >
-                      <span
-                        class="text-[#738895] text-[10px] line-through decoration-1"
-                        >$59.99</span
-                      >
-                      <span class="text-[#beee11] text-sm leading-none"
-                        >$19.80</span
-                      >
-                    </div>
-                  </div>
+            <div class="bg-gradient-to-r from-black/40 to-black/20 p-4 rounded relative border border-black/50 mb-8">
+                <h2 class="text-xl text-white mb-1">Buy <span id="detail-buy-title">Game</span></h2>
+                <div class="absolute right-4 bottom-4 flex items-center bg-black/40 p-1 rounded">
+                     <div class="text-white text-xs px-2 font-bold" id="detail-price">
+                        $0.00
+                     </div>
+                     <button id="btn-add-cart" class="btn-green px-4 py-2 rounded-sm text-sm font-medium">Add to Cart</button>
                 </div>
-              </div>
             </div>
-
-            <!-- Item 3: Battlefield -->
-            <div
-              onmouseenter="showGamePopup(this, 'ipsum')"
-              onmouseleave="hideGamePopup()"
-              onclick="router('game', 'ipsum')"
-              class="bg-[#0a141d] group cursor-pointer shadow-lg relative"
-            >
-              <div
-                class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"
-              ></div>
-              <div class="p-2 bg-[#16202d]">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div
-                      class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1"
-                    >
-                      -15%
-                    </div>
-                    <div
-                      class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center"
-                    >
-                      <span
-                        class="text-[#738895] text-[10px] line-through decoration-1"
-                        >$69.99</span
-                      >
-                      <span class="text-[#beee11] text-sm leading-none"
-                        >$59.49</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- SECOND ROW (From Screenshot) -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Item 4: Forza -->
-            <div
-              onmouseenter="showGamePopup(this, 'magna')"
-              onmouseleave="hideGamePopup()"
-              onclick="router('game', 'magna')"
-              class="bg-[#0a141d] group cursor-pointer shadow-lg relative"
-            >
-              <div
-                class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"
-              ></div>
-              <div class="p-2 bg-[#16202d]">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div
-                      class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1"
-                    >
-                      -65%
-                    </div>
-                    <div
-                      class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center"
-                    >
-                      <span
-                        class="text-[#738895] text-[10px] line-through decoration-1"
-                        >$59.99</span
-                      >
-                      <span class="text-[#beee11] text-sm leading-none"
-                        >$20.99</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Item 5: Halo -->
-            <div
-              onmouseenter="showGamePopup(this, 'lorem')"
-              onmouseleave="hideGamePopup()"
-              onclick="router('game', 'lorem')"
-              class="bg-[#0a141d] group cursor-pointer shadow-lg relative"
-            >
-              <div
-                class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"
-              ></div>
-              <div class="p-2 bg-[#16202d]">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div
-                      class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1"
-                    >
-                      -75%
-                    </div>
-                    <div
-                      class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center"
-                    >
-                      <span
-                        class="text-[#738895] text-[10px] line-through decoration-1"
-                        >$59.99</span
-                      >
-                      <span class="text-[#beee11] text-sm leading-none"
-                        >$14.99</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Item 6: RDR2 -->
-            <div
-              onmouseenter="showGamePopup(this, 'dolor')"
-              onmouseleave="hideGamePopup()"
-              onclick="router('game', 'dolor')"
-              class="bg-[#0a141d] group cursor-pointer shadow-lg relative"
-            >
-              <div
-                class="glass-box w-full h-40 border-b-0 rounded-t-sm rounded-b-none"
-              ></div>
-              <div class="p-2 bg-[#16202d]">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div
-                      class="bg-[#4c6b22] text-[#beee11] text-lg font-bold px-2 py-1"
-                    >
-                      -75%
-                    </div>
-                    <div
-                      class="flex flex-col items-end px-2 bg-[#344654] h-full justify-center"
-                    >
-                      <span
-                        class="text-[#738895] text-[10px] line-through decoration-1"
-                        >$59.99</span
-                      >
-                      <span class="text-[#beee11] text-sm leading-none"
-                        >$14.99</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 2: GAME DETAIL (Dynamic) -->
-      <div
-        id="view-game"
-        class="app-view hidden max-w-[940px] mx-auto px-4 py-6"
-      >
-        <div class="text-xs text-[#8f98a0] mb-4">
-          <a href="#" onclick="router('store')" class="hover:text-white"
-            >All Games</a
-          >
-          > <span>Action</span> > <span id="detail-breadcrumb">Game Title</span>
         </div>
 
-        <h1 id="detail-title" class="text-3xl text-white font-medium mb-4">
-          Game Title
-        </h1>
+        <!-- VIEW 3: CART (Dynamic) -->
+        <div id="view-cart" class="app-view hidden max-w-[940px] mx-auto px-4 py-8">
+            <h2 class="text-2xl text-white font-light tracking-wide mb-6 uppercase">Your Shopping Cart</h2>
+            
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="w-full md:w-2/3">
+                    
+                    <!-- Cart Items Container -->
+                    <div id="cart-items-container" class="flex flex-col gap-2">
+                        <!-- Items injected here via JS -->
+                    </div>
 
-        <div class="flex flex-col md:flex-row gap-4 mb-8">
-          <div
-            class="md:w-2/3 bg-black aspect-video relative flex items-center justify-center border border-black overflow-hidden"
-          >
-            <div class="glass-box w-full h-full"></div>
-            <i
-              class="fas fa-play-circle text-6xl text-white/50 hover:text-white/80 cursor-pointer transition absolute z-10"
-            ></i>
-          </div>
-          <div class="md:w-1/3 text-sm">
-            <div class="glass-box w-full h-28 mb-3 shadow-md"></div>
-            <p id="detail-desc" class="text-[#c6d4df] text-xs mb-4">
-              Description goes here.
-            </p>
-            <div class="text-[11px] text-[#556772]">
-              <div class="flex mb-1">
-                <span class="w-24 uppercase">Reviews:</span>
-                <span class="text-[#66c0f4]">Very Positive</span>
-              </div>
-              <div class="flex mb-1">
-                <span class="w-24 uppercase">Release Date:</span>
-                <span class="text-[#8f98a0]">Nov 19, 2025</span>
-              </div>
-            </div>
-          </div>
-        </div>
+                    <!-- Empty State -->
+                    <div id="cart-empty" class="hidden p-8 text-center text-[#8f98a0] bg-[#16202d]">
+                        Your cart is empty.
+                    </div>
 
-        <div
-          class="bg-gradient-to-r from-black/40 to-black/20 p-4 rounded relative border border-black/50 mb-8"
-        >
-          <h2 class="text-xl text-white mb-1">
-            Buy <span id="detail-buy-title">Game</span>
-          </h2>
-          <div
-            class="absolute right-4 bottom-4 flex items-center bg-black/40 p-1 rounded"
-          >
-            <div class="text-white text-xs px-2 font-bold" id="detail-price">
-              $0.00
-            </div>
-            <button
-              id="btn-add-cart"
-              class="btn-green px-4 py-2 rounded-sm text-sm font-medium"
-            >
-              Add to Cart
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 3: CART (Dynamic) -->
-      <div
-        id="view-cart"
-        class="app-view hidden max-w-[940px] mx-auto px-4 py-8"
-      >
-        <h2 class="text-2xl text-white font-light tracking-wide mb-6 uppercase">
-          Your Shopping Cart
-        </h2>
-
-        <div class="flex flex-col md:flex-row gap-6">
-          <div class="w-full md:w-2/3">
-            <!-- Cart Items Container -->
-            <div id="cart-items-container" class="flex flex-col gap-2">
-              <!-- Items injected here via JS -->
-            </div>
-
-            <!-- Empty State -->
-            <div
-              id="cart-empty"
-              class="hidden p-8 text-center text-[#8f98a0] bg-[#16202d]"
-            >
-              Your cart is empty.
-            </div>
-
-            <!-- Totals -->
-            <div
-              class="bg-[#212c3d] p-3 text-xs flex justify-between rounded-b mb-4 mt-1"
-            >
-              <span class="text-[#acb2b8]">Estimated total</span>
-              <span id="cart-total" class="text-white font-bold">$0.00</span>
-            </div>
-
-            <div class="text-right">
-              <button
-                onclick="router('store')"
-                class="text-xs text-[#66c0f4] hover:text-white underline"
-              >
-                Continue Shopping
-              </button>
-            </div>
-          </div>
-
-          <div class="w-full md:w-1/3 bg-[#171a21] p-4 rounded h-fit">
-            <button
-              onclick="checkAuthAndProceed()"
-              class="btn-green w-full py-3 rounded-sm font-medium text-[15px] mb-3"
-            >
-              Purchase for myself
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 4: LOGIN (UPDATED SPLIT LAYOUT) -->
-      <div
-        id="view-login"
-        class="app-view hidden max-w-[940px] mx-auto px-4 py-8 md:py-16"
-      >
-        <div class="flex flex-col md:flex-row gap-8">
-          <!-- LEFT: SIGN IN -->
-          <div class="flex-1 bg-[#1b2838] p-6 md:p-8">
-            <h2
-              class="text-[#1a9fff] text-3xl font-light uppercase tracking-wide mb-6"
-            >
-              Sign In
-            </h2>
-            <div class="space-y-4 mb-6">
-              <div>
-                <label
-                  class="text-[#66c0f4] text-xs font-bold uppercase block mb-1"
-                  >Account Name</label
-                >
-                <input
-                  type="text"
-                  id="login-username"
-                  class="input-dark w-full"
-                  placeholder=""
-                />
-              </div>
-              <div>
-                <label
-                  class="text-[#66c0f4] text-xs font-bold uppercase block mb-1"
-                  >Password</label
-                >
-                <input
-                  type="password"
-                  class="input-dark w-full"
-                  placeholder=""
-                />
-              </div>
-            </div>
-            <div class="flex items-center gap-2 mb-6">
-              <input type="checkbox" class="accent-[#66c0f4]" />
-              <span class="text-[#8f98a0] text-xs">Remember me</span>
-            </div>
-            <button
-              onclick="doLogin()"
-              class="btn-blue w-32 py-2.5 rounded-sm text-white font-medium text-sm mb-4"
-            >
-              Sign In
-            </button>
-            <div
-              class="text-xs text-[#8f98a0] underline hover:text-white cursor-pointer"
-            >
-              Help, I can't sign in
-            </div>
-          </div>
-
-          <!-- RIGHT: CREATE ACCOUNT -->
-          <div
-            class="flex-1 bg-[#1b2838] p-6 md:p-8 flex flex-col items-center justify-center text-center border-t md:border-t-0 md:border-l border-[#3a455a]"
-          >
-            <div class="mb-4">
-              <i class="fas fa-qrcode text-6xl text-[#66c0f4] opacity-50"></i>
-            </div>
-            <h3 class="text-[#1a9fff] text-xl mb-2">Or sign in with QR</h3>
-            <p class="text-[#8f98a0] text-sm mb-8 max-w-xs">
-              Use the Steam Mobile App to sign in via QR code.
-            </p>
-
-            <div class="text-[#b8b6b4] text-sm mb-2">
-              Don't have a Steam account?
-            </div>
-            <button
-              onclick="doLogin()"
-              class="border border-white/40 hover:border-white text-white px-6 py-2 rounded-sm text-sm transition"
-            >
-              Create a Free Account
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 5: CHECKOUT -->
-      <div
-        id="view-checkout"
-        class="app-view hidden max-w-[700px] mx-auto px-4 py-8"
-      >
-        <h2 class="text-2xl text-white font-light tracking-wide mb-6 uppercase">
-          Payment Method
-        </h2>
-
-        <div
-          id="payment-error"
-          class="hidden bg-[#3c0f12] border border-[#a61d24] p-4 mb-4 text-[#d85e65] text-sm flex items-center gap-3"
-        >
-          <i class="fas fa-exclamation-triangle text-2xl"></i>
-          <div>
-            <strong class="block text-white"
-              >Your purchase has not been completed.</strong
-            >The payment processor reported a failure. Please try again.
-          </div>
-        </div>
-
-        <div id="payment-form" class="bg-[#16202d] p-6 border border-[#2a3f5a]">
-          <div class="mb-6">
-            <label class="block text-[#66c0f4] text-xs uppercase font-bold mb-1"
-              >Payment Method</label
-            >
-            <select
-              class="w-full md:w-1/2 bg-[#2a3f5a] text-white p-2 text-sm border border-black rounded-sm outline-none"
-            >
-              <option>Visa</option>
-              <option>MasterCard</option>
-            </select>
-          </div>
-          <div class="bg-[#00000033] p-4 mb-6 text-sm text-[#acb2b8]">
-            <div
-              class="flex justify-between border-t border-[#3a455a] pt-1 mt-1 font-bold text-white"
-            >
-              <span>Total to Pay</span>
-              <span id="checkout-total">$0.00</span>
-            </div>
-          </div>
-          <button
-            onclick="processPayment()"
-            class="btn-green w-full md:w-auto px-12 py-3 rounded-sm font-medium text-lg"
-          >
-            Purchase
-          </button>
-        </div>
-      </div>
-
-      <!-- VIEW 6: SUCCESS -->
-      <div
-        id="view-success"
-        class="app-view hidden max-w-[700px] mx-auto px-4 py-12 text-center"
-      >
-        <div class="bg-[#16202d] p-8 border border-[#2a3f5a] shadow-xl">
-          <i class="fas fa-check-circle text-6xl text-[#66c0f4] mb-4"></i>
-          <h2 class="text-3xl text-white font-light mb-2">
-            Thank you for your purchase!
-          </h2>
-          <div class="flex flex-col gap-3 justify-center max-w-sm mx-auto mt-8">
-            <button
-              onclick="goToLibraryAndInstall()"
-              class="bg-[#212c3d] hover:bg-[#66c0f4] hover:text-white text-[#66c0f4] py-4 rounded text-lg font-bold border border-[#2a3f5a] transition flex items-center justify-center gap-3"
-            >
-              <i class="fas fa-download"></i> Install Content Now
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW 7: LIBRARY -->
-      <div
-        id="view-library"
-        class="app-view hidden w-full h-[calc(100vh-80px)] overflow-hidden"
-      >
-        <div class="flex flex-col md:flex-row h-full">
-          <div
-            class="w-full md:w-64 bg-[#191d26] flex flex-col border-r border-black/50"
-          >
-            <div
-              class="p-3 bg-[#202530] text-sm font-medium text-white shadow-sm"
-            >
-              HOME
-            </div>
-            <div
-              id="library-list"
-              class="p-2 overflow-y-auto flex-grow space-y-1 h-32 md:h-auto"
-            >
-              <!-- Populated dynamically + defaults -->
-              <div
-                class="px-2 py-1 text-[#dcdedf] hover:bg-[#3d4450] text-sm cursor-pointer"
-              >
-                Counter-Strike 2
-              </div>
-              <div
-                class="px-2 py-1 text-[#dcdedf] hover:bg-[#3d4450] text-sm cursor-pointer"
-              >
-                Dota 2
-              </div>
-            </div>
-          </div>
-          <div
-            class="flex-grow bg-[url('https://placehold.co/1200x800/101319/222.png')] bg-cover relative p-8"
-          >
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-[#1b2838] via-[#1b2838]/90 to-transparent"
-            ></div>
-            <div class="relative z-10 mt-10 md:mt-32">
-              <h1
-                id="lib-game-title"
-                class="text-3xl md:text-4xl font-bold text-white mb-6 drop-shadow-md"
-              >
-                Select a Game
-              </h1>
-              <div
-                id="lib-action-area"
-                class="bg-[#20242c] p-4 rounded inline-block w-full md:w-[600px] shadow-2xl border border-[#3a455a]"
-              >
-                <div id="download-ui">
-                  <div
-                    class="flex justify-between text-[#66c0f4] text-xs uppercase font-bold mb-1"
-                  >
-                    <span id="download-status-text">Downloading...</span
-                    ><span id="download-percent">0%</span>
-                  </div>
-                  <div
-                    class="w-full bg-[#1a1f29] h-4 mb-2 overflow-hidden border border-black"
-                  >
-                    <div
-                      id="progress-bar"
-                      class="h-full bg-gradient-to-r from-[#1a9fff] to-[#66c0f4] w-0 transition-all duration-300"
-                    ></div>
-                  </div>
+                    <!-- Totals -->
+                    <div class="bg-[#212c3d] p-3 text-xs flex justify-between rounded-b mb-4 mt-1">
+                        <span class="text-[#acb2b8]">Estimated total</span>
+                        <span id="cart-total" class="text-white font-bold">$0.00</span>
+                    </div>
+                    
+                    <div class="text-right">
+                         <button onclick="router('store')" class="text-xs text-[#66c0f4] hover:text-white underline">Continue Shopping</button>
+                    </div>
                 </div>
-                <div id="play-ui" class="hidden">
-                  <button
-                    class="btn-green px-12 py-3 rounded text-xl font-bold uppercase tracking-wider shadow-lg w-full"
-                  >
-                    <i class="fas fa-play mr-2"></i> Play
-                  </button>
+
+                <div class="w-full md:w-1/3 bg-[#171a21] p-4 rounded h-fit">
+                    <button onclick="checkAuthAndProceed()" class="btn-green w-full py-3 rounded-sm font-medium text-[15px] mb-3">Purchase for myself</button>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
+
+        <!-- VIEW 4: LOGIN (UPDATED SPLIT LAYOUT) -->
+        <div id="view-login" class="app-view hidden max-w-[940px] mx-auto px-4 py-8 md:py-16">
+            <div class="flex flex-col md:flex-row gap-8">
+                
+                <!-- LEFT: SIGN IN -->
+                <div class="flex-1 bg-[#1b2838] p-6 md:p-8">
+                    <h2 class="text-[#1a9fff] text-3xl font-light uppercase tracking-wide mb-6">Sign In</h2>
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="text-[#66c0f4] text-xs font-bold uppercase block mb-1">Account Name</label>
+                            <input type="text" id="login-username" class="input-dark w-full" placeholder="">
+                        </div>
+                        <div>
+                            <label class="text-[#66c0f4] text-xs font-bold uppercase block mb-1">Password</label>
+                            <input type="password" class="input-dark w-full" placeholder="">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mb-6">
+                        <input type="checkbox" class="accent-[#66c0f4]">
+                        <span class="text-[#8f98a0] text-xs">Remember me</span>
+                    </div>
+                    <button onclick="doLogin()" class="btn-blue w-32 py-2.5 rounded-sm text-white font-medium text-sm mb-4">Sign In</button>
+                    <div class="text-xs text-[#8f98a0] underline hover:text-white cursor-pointer">Help, I can't sign in</div>
+                </div>
+
+                <!-- RIGHT: CREATE ACCOUNT -->
+                <div class="flex-1 bg-[#1b2838] p-6 md:p-8 flex flex-col items-center justify-center text-center border-t md:border-t-0 md:border-l border-[#3a455a]">
+                    <div class="mb-4">
+                        <i class="fas fa-qrcode text-6xl text-[#66c0f4] opacity-50"></i>
+                    </div>
+                    <h3 class="text-[#1a9fff] text-xl mb-2">Or sign in with QR</h3>
+                    <p class="text-[#8f98a0] text-sm mb-8 max-w-xs">Use the Steam Mobile App to sign in via QR code.</p>
+                    
+                    <div class="text-[#b8b6b4] text-sm mb-2">Don't have a Steam account?</div>
+                    <button onclick="doLogin()" class="border border-white/40 hover:border-white text-white px-6 py-2 rounded-sm text-sm transition">Create a Free Account</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- VIEW 5: CHECKOUT -->
+        <div id="view-checkout" class="app-view hidden max-w-[700px] mx-auto px-4 py-8">
+            <h2 class="text-2xl text-white font-light tracking-wide mb-6 uppercase">Payment Method</h2>
+            
+            <div id="payment-error" class="hidden bg-[#3c0f12] border border-[#a61d24] p-4 mb-4 text-[#d85e65] text-sm flex items-center gap-3 fade-in">
+                <i class="fas fa-exclamation-triangle text-2xl"></i>
+                <div><strong class="block text-white">Your purchase has not been completed.</strong>The payment processor reported a failure. Please try again.</div>
+            </div>
+
+            <div id="payment-form" class="bg-[#16202d] p-6 border border-[#2a3f5a]">
+                <div class="mb-6">
+                    <label class="block text-[#66c0f4] text-xs uppercase font-bold mb-1">Payment Method</label>
+                    <select class="w-full md:w-1/2 bg-[#2a3f5a] text-white p-2 text-sm border border-black rounded-sm outline-none transition">
+                        <option>Visa</option>
+                        <option>MasterCard</option>
+                    </select>
+                </div>
+                <div class="bg-[#00000033] p-4 mb-6 text-sm text-[#acb2b8]">
+                    <div class="flex justify-between border-t border-[#3a455a] pt-1 mt-1 font-bold text-white">
+                        <span>Total to Pay</span>
+                        <span id="checkout-total">$0.00</span>
+                    </div>
+                </div>
+                <button onclick="processPayment()" class="btn-green w-full md:w-auto px-12 py-3 rounded-sm font-medium text-lg">Purchase</button>
+            </div>
+        </div>
+
+        <!-- VIEW 6: SUCCESS -->
+        <div id="view-success" class="app-view hidden max-w-[700px] mx-auto px-4 py-12 text-center fade-in">
+            <div class="bg-[#16202d] p-8 border border-[#2a3f5a] shadow-xl">
+                <i class="fas fa-check-circle text-6xl text-[#66c0f4] mb-4"></i>
+                <h2 class="text-3xl text-white font-light mb-2">Thank you for your purchase!</h2>
+                <div class="flex flex-col gap-3 justify-center max-w-sm mx-auto mt-8">
+                    <button onclick="goToLibraryAndInstall()" class="bg-[#212c3d] hover:bg-[#66c0f4] hover:text-white text-[#66c0f4] py-4 rounded text-lg font-bold border border-[#2a3f5a] transition flex items-center justify-center gap-3">
+                        <i class="fas fa-download"></i> Install Content Now
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 7: LIBRARY -->
+        <div id="view-library" class="app-view hidden w-full h-[calc(100vh-80px)] overflow-hidden fade-in">
+            <div class="flex flex-col md:flex-row h-full">
+                <div class="w-full md:w-64 bg-[#191d26] flex flex-col border-r border-black/50">
+                    <div class="p-3 bg-[#202530] text-sm font-medium text-white shadow-sm">HOME</div>
+                    <div id="library-list" class="p-2 overflow-y-auto flex-grow space-y-1 h-32 md:h-auto">
+                        <!-- Populated dynamically + defaults -->
+                        <div class="px-2 py-1 text-[#dcdedf] hover:bg-[#3d4450] text-sm cursor-pointer transition">Counter-Strike 2</div>
+                        <div class="px-2 py-1 text-[#dcdedf] hover:bg-[#3d4450] text-sm cursor-pointer transition">Dota 2</div>
+                    </div>
+                </div>
+                <div class="flex-grow bg-[url('https://placehold.co/1200x800/101319/222.png')] bg-cover relative p-8">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#1b2838] via-[#1b2838]/90 to-transparent"></div>
+                    <div class="relative z-10 mt-10 md:mt-32">
+                        <h1 id="lib-game-title" class="text-3xl md:text-4xl font-bold text-white mb-6 drop-shadow-md">Select a Game</h1>
+                        <div id="lib-action-area" class="bg-[#20242c] p-4 rounded inline-block w-full md:w-[600px] shadow-2xl border border-[#3a455a]">
+                            <div id="download-ui">
+                                <div class="flex justify-between text-[#66c0f4] text-xs uppercase font-bold mb-1"><span id="download-status-text">Downloading...</span><span id="download-percent">0%</span></div>
+                                <div class="w-full bg-[#1a1f29] h-4 mb-2 overflow-hidden border border-black"><div id="progress-bar" class="h-full bg-gradient-to-r from-[#1a9fff] to-[#66c0f4] w-0 transition-all duration-300"></div></div>
+                            </div>
+                            <div id="play-ui" class="hidden">
+                                <button class="btn-green px-12 py-3 rounded text-xl font-bold uppercase tracking-wider shadow-lg w-full"><i class="fas fa-play mr-2"></i> Play</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- JS Logic -->
     <script>
-      // --- DATA ---
-      const gamesDB = {
-        lorem: {
-          id: "lorem",
-          title: "Lorem Odyssey",
-          price: 47.99,
-          image:
-            "https://placehold.co/600x350/2a475e/ffffff?text=Lorem+Odyssey",
-          desc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.",
-          releaseDate: "Nov 19, 2025",
-          reviews: "Very Positive",
-          reviewCount: "14,302",
-          tags: ["RPG", "Open World", "Story Rich", "Action"],
-          screenshots: [
-            "https://placehold.co/200x100/111/fff",
-            "https://placehold.co/200x100/222/fff",
-            "https://placehold.co/200x100/333/fff",
-          ],
-        },
-        dolor: {
-          id: "dolor",
-          title: "Dolor Sit Amet Racing",
-          price: 9.99,
-          image:
-            "https://placehold.co/600x350/2a475e/ffffff?text=Dolor+Sit+Amet",
-          desc: "Experience high-octane latin racing simulation. Speed through the text blocks of history in this adrenaline-pumping classic.",
-          releaseDate: "Oct 12, 2024",
-          reviews: "Mixed",
-          reviewCount: "2,400",
-          tags: ["Racing", "Simulation", "Multiplayer"],
-          screenshots: [
-            "https://placehold.co/200x100/444/fff",
-            "https://placehold.co/200x100/555/fff",
-            "https://placehold.co/200x100/666/fff",
-          ],
-        },
-        ipsum: {
-          id: "ipsum",
-          title: "Ipsum Simulator 2025",
-          price: 14.99,
-          image:
-            "https://placehold.co/600x350/3b2c45/ffffff?text=Ipsum+Simulator",
-          desc: "Build your own text blocks. Manage resources like commas, periods, and line breaks in this intense strategy sim.",
-          releaseDate: "Jan 5, 2025",
-          reviews: "Overwhelmingly Positive",
-          reviewCount: "890",
-          tags: ["Strategy", "Simulation", "Singleplayer"],
-          screenshots: [
-            "https://placehold.co/200x100/777/fff",
-            "https://placehold.co/200x100/888/fff",
-            "https://placehold.co/200x100/999/fff",
-          ],
-        },
-        magna: {
-          id: "magna",
-          title: "Magna Aliqua RPG",
-          price: 29.99,
-          image: "https://placehold.co/600x350/5e2a2a/ffffff?text=Magna+Aliqua",
-          desc: "Excepteur sint occaecat cupidatat non proident. Level up your vocabulary in this classic role-playing adventure.",
-          releaseDate: "Dec 25, 2024",
-          reviews: "Positive",
-          reviewCount: "5,600",
-          tags: ["RPG", "Adventure", "Indie"],
-          screenshots: [
-            "https://placehold.co/200x100/aaa/fff",
-            "https://placehold.co/200x100/bbb/fff",
-            "https://placehold.co/200x100/ccc/fff",
-          ],
-        },
-      };
+        // --- DATA ---
+        const gamesDB = {
+            'lorem': {
+                id: 'lorem',
+                title: "Lorem Odyssey",
+                price: 47.99,
+                image: "https://placehold.co/600x350/2a475e/ffffff?text=Lorem+Odyssey",
+                desc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.",
+                releaseDate: "Nov 19, 2025",
+                reviews: "Very Positive",
+                reviewCount: "14,302",
+                tags: ["RPG", "Open World", "Story Rich", "Action"],
+                screenshots: ["https://placehold.co/200x100/111/fff", "https://placehold.co/200x100/222/fff", "https://placehold.co/200x100/333/fff"]
+            },
+            'dolor': {
+                id: 'dolor',
+                title: "Dolor Sit Amet Racing",
+                price: 9.99,
+                image: "https://placehold.co/600x350/2a475e/ffffff?text=Dolor+Sit+Amet",
+                desc: "Experience high-octane latin racing simulation. Speed through the text blocks of history in this adrenaline-pumping classic.",
+                releaseDate: "Oct 12, 2024",
+                reviews: "Mixed",
+                reviewCount: "2,400",
+                tags: ["Racing", "Simulation", "Multiplayer"],
+                screenshots: ["https://placehold.co/200x100/444/fff", "https://placehold.co/200x100/555/fff", "https://placehold.co/200x100/666/fff"]
+            },
+            'ipsum': {
+                id: 'ipsum',
+                title: "Ipsum Simulator 2025",
+                price: 14.99,
+                image: "https://placehold.co/600x350/3b2c45/ffffff?text=Ipsum+Simulator",
+                desc: "Build your own text blocks. Manage resources like commas, periods, and line breaks in this intense strategy sim.",
+                releaseDate: "Jan 5, 2025",
+                reviews: "Overwhelmingly Positive",
+                reviewCount: "890",
+                tags: ["Strategy", "Simulation", "Singleplayer"],
+                screenshots: ["https://placehold.co/200x100/777/fff", "https://placehold.co/200x100/888/fff", "https://placehold.co/200x100/999/fff"]
+            },
+            'magna': {
+                id: 'magna',
+                title: "Magna Aliqua RPG",
+                price: 29.99,
+                image: "https://placehold.co/600x350/5e2a2a/ffffff?text=Magna+Aliqua",
+                desc: "Excepteur sint occaecat cupidatat non proident. Level up your vocabulary in this classic role-playing adventure.",
+                releaseDate: "Dec 25, 2024",
+                reviews: "Positive",
+                reviewCount: "5,600",
+                tags: ["RPG", "Adventure", "Indie"],
+                screenshots: ["https://placehold.co/200x100/aaa/fff", "https://placehold.co/200x100/bbb/fff", "https://placehold.co/200x100/ccc/fff"]
+            }
+        };
 
-      // --- STATE ---
-      let cart = []; // Array of game objects
-      let isLoggedIn = false;
-      let currentGameId = null; // For detail view
+        // --- STATE ---
+        let cart = []; // Array of game objects
+        let isLoggedIn = false;
+        let currentGameId = null; // For detail view
 
-      // --- ROUTER ---
-      function router(viewName, param = null) {
-        // Hide all
-        document
-          .querySelectorAll(".app-view")
-          .forEach((el) => el.classList.add("hidden"));
+        // --- ROUTER ---
+        function router(viewName, param = null) {
+            // Hide all
+            document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
+            
+            // Logic per view
+            if (viewName === 'game' && param) {
+                loadGameDetail(param);
+            }
+            
+            if (viewName === 'cart') {
+                renderCart();
+            }
 
-        // Logic per view
-        if (viewName === "game" && param) {
-          loadGameDetail(param);
+            if (viewName === 'checkout') {
+                document.getElementById('checkout-total').innerText = document.getElementById('cart-total').innerText;
+            }
+
+            // Show target
+            const target = document.getElementById(`view-${viewName}`);
+            if(target) target.classList.remove('hidden');
+            window.scrollTo(0,0);
         }
 
-        if (viewName === "cart") {
-          renderCart();
+        // --- FUNCTIONS ---
+        
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
         }
 
-        if (viewName === "checkout") {
-          document.getElementById("checkout-total").innerText =
-            document.getElementById("cart-total").innerText;
+        function showGamePopup(element, gameId) {
+            const popup = document.getElementById('game-hover-popup');
+            const game = gamesDB[gameId];
+            if (!game) return;
+
+            // Populate Data
+            document.getElementById('popup-title').innerText = game.title;
+            document.getElementById('popup-date').innerText = `Released: ${game.releaseDate}`;
+            document.getElementById('popup-review-summary').innerText = game.reviews;
+            // Review color logic
+            const reviewEl = document.getElementById('popup-review-summary');
+            if(game.reviews.includes('Positive')) reviewEl.className = "font-medium text-[#66c0f4]";
+            else if(game.reviews.includes('Mixed')) reviewEl.className = "font-medium text-[#b9a074]";
+            else reviewEl.className = "font-medium text-[#a34c26]";
+
+            document.getElementById('popup-review-count').innerText = `(${game.reviewCount})`;
+            
+            // Images (using glass box style for now, or placehold.co)
+            document.getElementById('popup-img-main').style.backgroundImage = `url('${game.image}')`;
+            document.getElementById('popup-img-main').style.backgroundSize = 'cover';
+
+            // Tags
+            const tagContainer = document.getElementById('popup-tags');
+            tagContainer.innerHTML = '';
+            game.tags.forEach(tag => {
+                tagContainer.innerHTML += `<span class="text-[10px] bg-[#233c51] text-[#67c1f5] px-1.5 py-0.5 rounded-sm">${tag}</span>`;
+            });
+
+            // Positioning Logic
+            const rect = element.getBoundingClientRect();
+            
+            // Default: Show to the right
+            let top = rect.top + window.scrollY;
+            let left = rect.right + 10;
+
+            // If it overflows right edge, show on left
+            if (left + 300 > window.innerWidth) {
+                left = rect.left - 310; 
+            }
+
+            popup.style.top = `${top}px`;
+            popup.style.left = `${left}px`;
+            popup.classList.remove('hidden');
         }
 
-        // Show target
-        const target = document.getElementById(`view-${viewName}`);
-        if (target) target.classList.remove("hidden");
-        window.scrollTo(0, 0);
-      }
-
-      // --- FUNCTIONS ---
-
-      function toggleMobileMenu() {
-        const menu = document.getElementById("mobile-menu");
-        menu.classList.toggle("hidden");
-      }
-
-      function showGamePopup(element, gameId) {
-        const popup = document.getElementById("game-hover-popup");
-        const game = gamesDB[gameId];
-        if (!game) return;
-
-        // Populate Data
-        document.getElementById("popup-title").innerText = game.title;
-        document.getElementById(
-          "popup-date"
-        ).innerText = `Released: ${game.releaseDate}`;
-        document.getElementById("popup-review-summary").innerText =
-          game.reviews;
-        // Review color logic
-        const reviewEl = document.getElementById("popup-review-summary");
-        if (game.reviews.includes("Positive"))
-          reviewEl.className = "font-medium text-[#66c0f4]";
-        else if (game.reviews.includes("Mixed"))
-          reviewEl.className = "font-medium text-[#b9a074]";
-        else reviewEl.className = "font-medium text-[#a34c26]";
-
-        document.getElementById(
-          "popup-review-count"
-        ).innerText = `(${game.reviewCount})`;
-
-        // Images (using glass box style for now, or placehold.co)
-        document.getElementById(
-          "popup-img-main"
-        ).style.backgroundImage = `url('${game.image}')`;
-        document.getElementById("popup-img-main").style.backgroundSize =
-          "cover";
-
-        // Tags
-        const tagContainer = document.getElementById("popup-tags");
-        tagContainer.innerHTML = "";
-        game.tags.forEach((tag) => {
-          tagContainer.innerHTML += `<span class="text-[10px] bg-[#233c51] text-[#67c1f5] px-1.5 py-0.5 rounded-sm">${tag}</span>`;
-        });
-
-        // Positioning Logic
-        const rect = element.getBoundingClientRect();
-
-        // Default: Show to the right
-        let top = rect.top + window.scrollY;
-        let left = rect.right + 10;
-
-        // If it overflows right edge, show on left
-        if (left + 300 > window.innerWidth) {
-          left = rect.left - 310;
+        function hideGamePopup() {
+            document.getElementById('game-hover-popup').classList.add('hidden');
         }
 
-        popup.style.top = `${top}px`;
-        popup.style.left = `${left}px`;
-        popup.classList.remove("hidden");
-      }
+        function loadGameDetail(gameId) {
+            const game = gamesDB[gameId];
+            if (!game) return;
 
-      function hideGamePopup() {
-        document.getElementById("game-hover-popup").classList.add("hidden");
-      }
+            currentGameId = gameId; // store for adding to cart
+            document.getElementById('detail-breadcrumb').innerText = game.title;
+            document.getElementById('detail-title').innerText = game.title;
+            
+            // Update visual elements - using empty divs or setting styles if needed
+            // For now we keep the text updates
+            document.getElementById('detail-desc').innerText = game.desc;
+            document.getElementById('detail-buy-title').innerText = game.title;
+            document.getElementById('detail-price').innerText = "$" + game.price;
 
-      function loadGameDetail(gameId) {
-        const game = gamesDB[gameId];
-        if (!game) return;
-
-        currentGameId = gameId; // store for adding to cart
-        document.getElementById("detail-breadcrumb").innerText = game.title;
-        document.getElementById("detail-title").innerText = game.title;
-
-        // Update visual elements - using empty divs or setting styles if needed
-        // For now we keep the text updates
-        document.getElementById("detail-desc").innerText = game.desc;
-        document.getElementById("detail-buy-title").innerText = game.title;
-        document.getElementById("detail-price").innerText = "$" + game.price;
-
-        // Setup Add to Cart button
-        const btn = document.getElementById("btn-add-cart");
-        btn.onclick = () => addToCart(game);
-      }
-
-      // UPDATED ADD TO CART LOGIC
-      function addToCart(game) {
-        // Check if already in cart
-        if (!cart.find((g) => g.id === game.id)) {
-          cart.push(game);
+            // Setup Add to Cart button
+            const btn = document.getElementById('btn-add-cart');
+            btn.onclick = () => addToCart(game);
         }
 
-        // Update Cart Count in Nav
-        document.getElementById("nav-cart-count").innerText = cart.length;
+        // UPDATED ADD TO CART LOGIC
+        function addToCart(game) {
+            // Check if already in cart
+            if (!cart.find(g => g.id === game.id)) {
+                cart.push(game);
+            }
+            
+            // Update Cart Count in Nav
+            document.getElementById('nav-cart-count').innerText = cart.length;
 
-        // Populate Modal Data (Text Only now)
-        document.getElementById("modal-game-title").innerText = game.title;
-        document.getElementById("modal-game-price").innerText =
-          "$" + game.price;
-        document.getElementById("modal-cart-count").innerText = cart.length;
+            // Populate Modal Data (Text Only now)
+            document.getElementById('modal-game-title').innerText = game.title;
+            document.getElementById('modal-game-price').innerText = "$" + game.price;
+            document.getElementById('modal-cart-count').innerText = cart.length;
 
-        // Show Modal
-        const modal = document.getElementById("added-to-cart-modal");
-        modal.classList.remove("hidden");
-      }
+            // Show Modal
+            const modal = document.getElementById('added-to-cart-modal');
+            modal.classList.remove('hidden');
+        }
 
-      function closeModal() {
-        document.getElementById("added-to-cart-modal").classList.add("hidden");
-      }
+        function closeModal() {
+            document.getElementById('added-to-cart-modal').classList.add('hidden');
+        }
 
-      function removeFromCart(index) {
-        cart.splice(index, 1);
-        document.getElementById("nav-cart-count").innerText = cart.length; // Update count
-        renderCart();
-      }
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            document.getElementById('nav-cart-count').innerText = cart.length; // Update count
+            renderCart();
+        }
 
-      function renderCart() {
-        const container = document.getElementById("cart-items-container");
-        const emptyMsg = document.getElementById("cart-empty");
-        const totalEl = document.getElementById("cart-total");
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const emptyMsg = document.getElementById('cart-empty');
+            const totalEl = document.getElementById('cart-total');
+            
+            container.innerHTML = '';
+            let total = 0;
 
-        container.innerHTML = "";
-        let total = 0;
-
-        if (cart.length === 0) {
-          emptyMsg.classList.remove("hidden");
-        } else {
-          emptyMsg.classList.add("hidden");
-
-          cart.forEach((game, index) => {
-            total += game.price;
-            const itemHTML = `
+            if (cart.length === 0) {
+                emptyMsg.classList.remove('hidden');
+            } else {
+                emptyMsg.classList.add('hidden');
+                
+                cart.forEach((game, index) => {
+                    total += game.price;
+                    const itemHTML = `
                         <div class="bg-[#16202d] p-4 flex gap-4 items-center mb-1 border-l-4 border-[#3a455a]">
                             <div class="glass-box w-28 h-12"></div>
                             <div class="flex-grow">
@@ -1479,133 +939,132 @@
                             <div class="text-white font-medium">$${game.price}</div>
                         </div>
                     `;
-            container.innerHTML += itemHTML;
-          });
+                    container.innerHTML += itemHTML;
+                });
+            }
+
+            totalEl.innerText = "$" + total.toFixed(2);
         }
 
-        totalEl.innerText = "$" + total.toFixed(2);
-      }
-
-      function checkAuthAndProceed() {
-        if (cart.length === 0) {
-          alert("Your cart is empty!");
-          return;
+        function checkAuthAndProceed() {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+            if (isLoggedIn) {
+                router('checkout');
+            } else {
+                router('login');
+            }
         }
-        if (isLoggedIn) {
-          router("checkout");
-        } else {
-          router("login");
+
+        function doLogin() {
+            const btn = document.querySelector('#view-login button');
+            const originalText = btn.innerText;
+            // Grab input value
+            const inputName = document.getElementById('login-username').value;
+            const finalName = inputName.trim() !== "" ? inputName : "GamerOne";
+
+            btn.innerText = "Verifying...";
+            
+            setTimeout(() => {
+                isLoggedIn = true;
+                btn.innerText = originalText;
+                
+                // Update Global Header with specific Name
+                document.getElementById('header-username').innerText = finalName;
+                
+                // Proceed to checkout or store depending on cart
+                if(cart.length > 0) {
+                    router('checkout');
+                } else {
+                    router('store'); // If they just logged in for fun, send them to store
+                }
+            }, 800);
         }
-      }
 
-      function doLogin() {
-        const btn = document.querySelector("#view-login button");
-        const originalText = btn.innerText;
-        // Grab input value
-        const inputName = document.getElementById("login-username").value;
-        const finalName = inputName.trim() !== "" ? inputName : "GamerOne";
+        function processPayment() {
+            const errorBox = document.getElementById('payment-error');
+            errorBox.classList.add('hidden');
+            
+            const btn = document.querySelector('#view-checkout button');
+            btn.innerText = "Processing...";
+            btn.classList.add('opacity-50', 'pointer-events-none');
 
-        btn.innerText = "Verifying...";
+            setTimeout(() => {
+                const shouldFail = Math.random() > 0.5;
 
-        setTimeout(() => {
-          isLoggedIn = true;
-          btn.innerText = originalText;
+                if (shouldFail) {
+                    errorBox.classList.remove('hidden');
+                    const paymentForm = document.getElementById('payment-form');
+                    const formContainer = paymentForm.parentElement; // Animate container if needed, but CSS shake handles form
+                    paymentForm.classList.add('shake');
+                    setTimeout(() => paymentForm.classList.remove('shake'), 500);
+                    btn.innerText = "Purchase";
+                    btn.classList.remove('opacity-50', 'pointer-events-none');
+                } else {
+                    btn.innerText = "Purchase";
+                    btn.classList.remove('opacity-50', 'pointer-events-none');
+                    router('success');
+                }
+            }, 1500);
+        }
 
-          // Update Global Header with specific Name
-          document.getElementById("header-username").innerText = finalName;
+        function goToLibraryAndInstall() {
+            router('library');
+            
+            // Add purchased games to library list visual
+            const libList = document.getElementById('library-list');
+            cart.forEach(game => {
+                 // Avoid duplicates in visual list
+                 if(!libList.innerHTML.includes(game.title)) {
+                    libList.innerHTML += `<div class="px-2 py-1 text-white bg-[#3d4450] text-sm font-bold cursor-pointer border-l-4 border-[#66c0f4] transition hover:bg-[#66c0f4] hover:text-black">${game.title}</div>`;
+                 }
+            });
+            
+            // Just simulate installing the LAST game added for demo purposes
+            if(cart.length > 0) {
+                document.getElementById('lib-game-title').innerText = cart[cart.length-1].title;
+            }
 
-          // Proceed to checkout or store depending on cart
-          if (cart.length > 0) {
-            router("checkout");
-          } else {
-            router("store"); // If they just logged in for fun, send them to store
-          }
-        }, 800);
-      }
+            // Clear Cart after purchase
+            cart = [];
+            document.getElementById('nav-cart-count').innerText = 0;
+            renderCart();
 
-      function processPayment() {
-        const errorBox = document.getElementById("payment-error");
-        errorBox.classList.add("hidden");
+            const progressBar = document.getElementById('progress-bar');
+            const percentText = document.getElementById('download-percent');
+            const downloadUI = document.getElementById('download-ui');
+            const playUI = document.getElementById('play-ui');
+            
+            downloadUI.classList.remove('hidden');
+            playUI.classList.add('hidden');
+            progressBar.style.width = '0%';
+            
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    downloadUI.classList.add('hidden');
+                    playUI.classList.remove('hidden');
+                } else {
+                    width++;
+                    progressBar.style.width = width + '%';
+                    percentText.innerText = width + '%';
+                }
+            }, 30);
+        }
 
-        const btn = document.querySelector("#view-checkout button");
-        btn.innerText = "Processing...";
-        btn.classList.add("opacity-50", "pointer-events-none");
-
-        setTimeout(() => {
-          const shouldFail = Math.random() > 0.5;
-
-          if (shouldFail) {
-            errorBox.classList.remove("hidden");
-            const paymentForm = document.getElementById("payment-form");
-            // Removed shake animation trigger
-            btn.innerText = "Purchase";
-            btn.classList.remove("opacity-50", "pointer-events-none");
-          } else {
-            btn.innerText = "Purchase";
-            btn.classList.remove("opacity-50", "pointer-events-none");
-            router("success");
-          }
-        }, 1500);
-      }
-
-      function goToLibraryAndInstall() {
-        router("library");
-
-        // Add purchased games to library list visual
-        const libList = document.getElementById("library-list");
-        cart.forEach((game) => {
-          // Avoid duplicates in visual list
-          if (!libList.innerHTML.includes(game.title)) {
-            libList.innerHTML += `<div class="px-2 py-1 text-white bg-[#3d4450] text-sm font-bold cursor-pointer border-l-4 border-[#66c0f4]">${game.title}</div>`;
-          }
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('mode') === 'figma') {
+                document.body.classList.add('figma-mode');
+                document.querySelectorAll('.app-view').forEach(el => el.classList.remove('hidden'));
+            } else {
+                router('store'); 
+            }
         });
-
-        // Just simulate installing the LAST game added for demo purposes
-        if (cart.length > 0) {
-          document.getElementById("lib-game-title").innerText =
-            cart[cart.length - 1].title;
-        }
-
-        // Clear Cart after purchase
-        cart = [];
-        document.getElementById("nav-cart-count").innerText = 0;
-        renderCart();
-
-        const progressBar = document.getElementById("progress-bar");
-        const percentText = document.getElementById("download-percent");
-        const downloadUI = document.getElementById("download-ui");
-        const playUI = document.getElementById("play-ui");
-
-        downloadUI.classList.remove("hidden");
-        playUI.classList.add("hidden");
-        progressBar.style.width = "0%";
-
-        let width = 0;
-        const interval = setInterval(() => {
-          if (width >= 100) {
-            clearInterval(interval);
-            downloadUI.classList.add("hidden");
-            playUI.classList.remove("hidden");
-          } else {
-            width++;
-            progressBar.style.width = width + "%";
-            percentText.innerText = width + "%";
-          }
-        }, 30);
-      }
-
-      // Init
-      window.addEventListener("DOMContentLoaded", () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get("mode") === "figma") {
-          document.body.classList.add("figma-mode");
-          document
-            .querySelectorAll(".app-view")
-            .forEach((el) => el.classList.remove("hidden"));
-        } else {
-          router("store");
-        }
-      });
     </script>
-  </body>
+</body>
 </html>
